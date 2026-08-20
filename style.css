@@ -1,1 +1,144 @@
+/* ========================= */
+/* BASIC PAGE */
+/* ========================= */
 
+* {
+  box-sizing: border-box;
+}
+
+
+body {
+  margin: 0;
+  padding: 20px;
+
+  font-family: Arial, sans-serif;
+
+  background: #18181f;
+  color: #ffffff;
+}
+
+
+.game {
+  width: 100%;
+  max-width: 700px;
+
+  margin: 0 auto;
+}
+
+
+/* ========================= */
+/* HEADINGS */
+/* ========================= */
+
+h1 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+
+h2 {
+  margin-top: 0;
+}
+
+
+#saveStatus {
+  text-align: center;
+  color: #b8b8c8;
+
+  margin-bottom: 25px;
+}
+
+
+/* ========================= */
+/* PANELS */
+/* ========================= */
+
+.panel {
+  background: #24242e;
+
+  border: 1px solid #3b3b49;
+  border-radius: 12px;
+
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+
+/* ========================= */
+/* SAVE SLOTS */
+/* ========================= */
+
+.save-slots {
+  display: flex;
+  flex-direction: column;
+
+  gap: 15px;
+}
+
+
+.save-slot {
+  background: #30303c;
+
+  border-radius: 10px;
+
+  padding: 15px;
+}
+
+
+.save-slot h3 {
+  margin-top: 0;
+}
+
+
+.save-slot p {
+  color: #c6c6d2;
+}
+
+
+/* ========================= */
+/* BUTTONS */
+/* ========================= */
+
+button {
+  border: none;
+
+  border-radius: 8px;
+
+  padding: 10px 14px;
+  margin: 4px 4px 4px 0;
+
+  font-size: 15px;
+
+  background: #646cff;
+  color: white;
+
+  cursor: pointer;
+}
+
+
+button:active {
+  transform: scale(0.97);
+}
+
+
+button.danger {
+  background: #c64545;
+}
+
+
+/* ========================= */
+/* LARGER PHONES / COMPUTERS */
+/* ========================= */
+
+@media (min-width: 650px) {
+
+  .save-slots {
+    flex-direction: row;
+  }
+
+
+  .save-slot {
+    flex: 1;
+  }
+
+}
