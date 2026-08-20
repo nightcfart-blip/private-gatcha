@@ -1,1 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
 
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>My Private Gacha</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="game">
+
+    <h1>My Private Gacha</h1>
+
+    <p id="saveStatus">
+      No save loaded
+    </p>
+
+
+    <!-- ========================= -->
+    <!-- SAVE FILES -->
+    <!-- ========================= -->
+
+    <section class="panel">
+
+      <h2>Save Files</h2>
+
+      <div class="save-slots">
+
+        <!-- SAVE SLOT 1 -->
+
+        <div class="save-slot">
+
+          <h3>Save 1</h3>
+
+          <p id="slot1Info">
+            Empty
+          </p>
+
+          <button onclick="loadSave(1)">
+            Load
+          </button>
+
+          <button onclick="overwriteSave(1)">
+            Overwrite
+          </button>
+
+          <button
+            class="danger"
+            onclick="resetSave(1)"
+          >
+            Reset
+          </button>
+
+        </div>
+
+
+        <!-- SAVE SLOT 2 -->
+
+        <div class="save-slot">
+
+          <h3>Save 2</h3>
+
+          <p id="slot2Info">
+            Empty
+          </p>
+
+          <button onclick="loadSave(2)">
+            Load
+          </button>
+
+          <button onclick="overwriteSave(2)">
+            Overwrite
+          </button>
+
+          <button
+            class="danger"
+            onclick="resetSave(2)"
+          >
+            Reset
+          </button>
+
+        </div>
+
+
+        <!-- SAVE SLOT 3 -->
+
+        <div class="save-slot">
+
+          <h3>Save 3</h3>
+
+          <p id="slot3Info">
+            Empty
+          </p>
+
+          <button onclick="loadSave(3)">
+            Load
+          </button>
+
+          <button onclick="overwriteSave(3)">
+            Overwrite
+          </button>
+
+          <button
+            class="danger"
+            onclick="resetSave(3)"
+          >
+            Reset
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- CURRENT PLAYER -->
+    <!-- ========================= -->
+
+    <section class="panel">
+
+      <h2>Current Player</h2>
+
+      <p>
+        Save Slot:
+        <strong id="currentSlot">
+          None
+        </strong>
+      </p>
+
+      <p>
+        Currency:
+        <strong id="currencyDisplay">
+          0
+        </strong>
+      </p>
+
+      <p>
+        Characters Claimed:
+        <strong id="claimedDisplay">
+          0
+        </strong>
+      </p>
+
+      <p>
+        Wishlist:
+        <strong id="wishlistDisplay">
+          0
+        </strong>
+      </p>
+
+      <p>
+        Tower Floor:
+        <strong id="towerDisplay">
+          1
+        </strong>
+      </p>
+
+      <p>
+        Reaction Power:
+        <strong id="reactionPowerDisplay">
+          0
+        </strong>
+      </p>
+
+      <p>
+        Total Rolls:
+        <strong id="rollsDisplay">
+          0
+        </strong>
+      </p>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- TESTING -->
+    <!-- ========================= -->
+
+    <section class="panel">
+
+      <h2>Save Testing</h2>
+
+      <p>
+        These buttons are temporary.
+        They let us make sure saving works.
+      </p>
+
+      <button onclick="testAddCurrency()">
+        +100 Currency
+      </button>
+
+      <button onclick="testAddRoll()">
+        +1 Roll
+      </button>
+
+      <button onclick="saveGame()">
+        Save Now
+      </button>
+
+    </section>
+
+  </main>
+
+
+  <!--
+    data.js loads FIRST because it contains
+    the default player structure.
+
+    app.js loads SECOND because it uses
+    information from data.js.
+  -->
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
