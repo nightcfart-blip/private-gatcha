@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -11,211 +12,197 @@
 
   <title>Private Gacha</title>
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=10">
+
 </head>
 
 
 <body>
 
-  <div class="app">
 
-    <!-- ========================= -->
-    <!-- HEADER -->
-    <!-- ========================= -->
+  <!-- ======================================= -->
+  <!-- SAVE SELECT SCREEN -->
+  <!-- ======================================= -->
 
-    <header class="top-bar">
+  <section
+    id="saveScreen"
+    class="screen save-screen"
+  >
 
-      <div>
+    <div class="save-screen-inner">
+
+
+      <header class="save-title">
+
+        <div class="logo-symbol">
+          ◈
+        </div>
+
         <p class="eyebrow">
-          PRIVATE GACHA
+          PRIVATE COLLECTION
         </p>
 
         <h1>
-          Character Collection
+          Gacha
         </h1>
-      </div>
 
-      <div class="save-badge">
-        Save
-        <span id="currentSlot">
-          —
-        </span>
-      </div>
+        <p class="save-subtitle">
+          Choose a save file
+        </p>
 
-    </header>
+      </header>
 
 
-    <!-- ========================= -->
-    <!-- SAVE STATUS -->
-    <!-- ========================= -->
 
-    <div
-      id="saveStatus"
-      class="status-message"
-    >
-      Choose a save file to begin.
-    </div>
-
-
-    <!-- ========================= -->
-    <!-- SAVE FILES -->
-    <!-- ========================= -->
-
-    <section class="panel">
-
-      <div class="section-heading">
-
-        <div>
-          <p class="eyebrow">
-            PLAYER DATA
-          </p>
-
-          <h2>
-            Save Files
-          </h2>
-        </div>
-
-      </div>
-
-
-      <div class="save-grid">
+      <div class="save-list">
 
 
         <!-- SAVE 1 -->
 
-        <article class="save-card">
+        <article
+          class="save-select-card"
+          onclick="loadSave(1)"
+        >
 
-          <div class="save-number">
-            01
+          <div class="save-card-top">
+
+            <span class="save-number">
+              SAVE 01
+            </span>
+
+            <button
+              class="save-options"
+              onclick="event.stopPropagation(); openSaveMenu(1)"
+            >
+              •••
+            </button>
+
           </div>
 
-          <h3>
-            Save File 1
-          </h3>
+
+          <h2 id="slot1Title">
+            New Save
+          </h2>
 
           <p
             id="slot1Info"
-            class="save-info"
+            class="save-summary"
           >
             Empty
           </p>
 
-          <div class="button-row">
 
-            <button
-              class="primary-button"
-              onclick="loadSave(1)"
-            >
-              Load
-            </button>
+          <div class="continue-row">
 
-            <button
-              class="secondary-button"
-              onclick="overwriteSave(1)"
-            >
-              Copy Here
-            </button>
+            <span id="slot1Action">
+              START
+            </span>
 
-            <button
-              class="danger-button"
-              onclick="resetSave(1)"
-            >
-              Reset
-            </button>
+            <span>
+              →
+            </span>
 
           </div>
 
         </article>
+
 
 
         <!-- SAVE 2 -->
 
-        <article class="save-card">
+        <article
+          class="save-select-card"
+          onclick="loadSave(2)"
+        >
 
-          <div class="save-number">
-            02
+          <div class="save-card-top">
+
+            <span class="save-number">
+              SAVE 02
+            </span>
+
+            <button
+              class="save-options"
+              onclick="event.stopPropagation(); openSaveMenu(2)"
+            >
+              •••
+            </button>
+
           </div>
 
-          <h3>
-            Save File 2
-          </h3>
+
+          <h2 id="slot2Title">
+            New Save
+          </h2>
 
           <p
             id="slot2Info"
-            class="save-info"
+            class="save-summary"
           >
             Empty
           </p>
 
-          <div class="button-row">
 
-            <button
-              class="primary-button"
-              onclick="loadSave(2)"
-            >
-              Load
-            </button>
+          <div class="continue-row">
 
-            <button
-              class="secondary-button"
-              onclick="overwriteSave(2)"
-            >
-              Copy Here
-            </button>
+            <span id="slot2Action">
+              START
+            </span>
 
-            <button
-              class="danger-button"
-              onclick="resetSave(2)"
-            >
-              Reset
-            </button>
+            <span>
+              →
+            </span>
 
           </div>
 
         </article>
+
 
 
         <!-- SAVE 3 -->
 
-        <article class="save-card">
+        <article
+          class="save-select-card"
+          onclick="loadSave(3)"
+        >
 
-          <div class="save-number">
-            03
+          <div class="save-card-top">
+
+            <span class="save-number">
+              SAVE 03
+            </span>
+
+            <button
+              class="save-options"
+              onclick="event.stopPropagation(); openSaveMenu(3)"
+            >
+              •••
+            </button>
+
           </div>
 
-          <h3>
-            Save File 3
-          </h3>
+
+          <h2 id="slot3Title">
+            New Save
+          </h2>
 
           <p
             id="slot3Info"
-            class="save-info"
+            class="save-summary"
           >
             Empty
           </p>
 
-          <div class="button-row">
 
-            <button
-              class="primary-button"
-              onclick="loadSave(3)"
-            >
-              Load
-            </button>
+          <div class="continue-row">
 
-            <button
-              class="secondary-button"
-              onclick="overwriteSave(3)"
-            >
-              Copy Here
-            </button>
+            <span id="slot3Action">
+              START
+            </span>
 
-            <button
-              class="danger-button"
-              onclick="resetSave(3)"
-            >
-              Reset
-            </button>
+            <span>
+              →
+            </span>
 
           </div>
 
@@ -224,345 +211,702 @@
 
       </div>
 
-    </section>
+    </div>
+
+  </section>
 
 
 
-    <!-- ========================= -->
-    <!-- PLAYER SUMMARY -->
-    <!-- ========================= -->
+  <!-- ======================================= -->
+  <!-- MAIN GAME -->
+  <!-- ======================================= -->
 
-    <section class="panel">
+  <section
+    id="gameScreen"
+    class="screen game-screen hidden"
+  >
 
-      <div class="section-heading">
 
-        <div>
-          <p class="eyebrow">
-            CURRENT PROFILE
-          </p>
+    <!-- APP HEADER -->
 
-          <h2>
-            Player
-          </h2>
-        </div>
+    <header class="app-header">
+
+      <div>
+
+        <span class="mini-logo">
+          ◈
+        </span>
+
+        <strong>
+          GACHA
+        </strong>
 
       </div>
 
 
-      <div class="stat-grid">
+      <button
+        class="profile-button"
+        onclick="showSaveScreen()"
+      >
 
-        <div class="stat-card">
-          <span class="stat-label">
-            Currency
+        SAVE
+
+        <span id="currentSlot">
+          1
+        </span>
+
+      </button>
+
+    </header>
+
+
+
+    <!-- TOP NAVIGATION -->
+
+    <nav
+      id="topNav"
+      class="top-nav"
+    >
+
+      <button
+        class="nav-item active"
+        data-screen="rolls"
+        onclick="showGamePage('rolls', this)"
+      >
+        Rolls
+      </button>
+
+      <button
+        class="nav-item"
+        data-screen="collection"
+        onclick="showGamePage('collection', this)"
+      >
+        Collection
+      </button>
+
+      <button
+        class="nav-item"
+        data-screen="wishlist"
+        onclick="showGamePage('wishlist', this)"
+      >
+        Wishlist
+      </button>
+
+      <button
+        class="nav-item"
+        data-screen="tower"
+        onclick="showGamePage('tower', this)"
+      >
+        Tower
+      </button>
+
+      <button
+        class="nav-item"
+        data-screen="shop"
+        onclick="showGamePage('shop', this)"
+      >
+        Shop
+      </button>
+
+      <button
+        class="nav-item"
+        data-screen="badges"
+        onclick="showGamePage('badges', this)"
+      >
+        Badges
+      </button>
+
+      <button
+        class="nav-item"
+        data-screen="spheres"
+        onclick="showGamePage('spheres', this)"
+      >
+        Spheres
+      </button>
+
+      <button
+        class="nav-item"
+        data-screen="gamble"
+        onclick="showGamePage('gamble', this)"
+      >
+        Gamble
+      </button>
+
+      <button
+        class="nav-item"
+        data-screen="stats"
+        onclick="showGamePage('stats', this)"
+      >
+        Stats
+      </button>
+
+      <button
+        class="nav-item"
+        data-screen="save"
+        onclick="showGamePage('save', this)"
+      >
+        Save
+      </button>
+
+    </nav>
+
+
+
+    <!-- ======================================= -->
+    <!-- ROLLS PAGE -->
+    <!-- ======================================= -->
+
+    <main
+      id="page-rolls"
+      class="game-page active-page"
+    >
+
+
+      <!-- RESOURCE STRIP -->
+
+      <section class="resource-strip">
+
+
+        <div class="resource-item">
+
+          <span>
+            ◈
           </span>
 
           <strong id="currencyDisplay">
             0
           </strong>
+
         </div>
 
 
-        <div class="stat-card">
-          <span class="stat-label">
-            Claimed
-          </span>
+        <div class="resource-item">
 
-          <strong id="claimedDisplay">
-            0
+          <small>
+            ROLLS
+          </small>
+
+          <strong id="rollsAvailableDisplay">
+            10
           </strong>
+
         </div>
 
 
-        <div class="stat-card">
-          <span class="stat-label">
-            Wishlist
-          </span>
+        <div class="resource-item">
 
-          <strong id="wishlistDisplay">
-            0
+          <small>
+            CLAIMS
+          </small>
+
+          <strong id="claimsDisplay">
+            1
           </strong>
+
         </div>
 
 
-        <div class="stat-card">
-          <span class="stat-label">
-            Tower
-          </span>
-
-          <strong id="towerDisplay">
-            —
-          </strong>
-        </div>
+      </section>
 
 
-        <div class="stat-card">
-          <span class="stat-label">
-            Reaction Power
-          </span>
 
-          <strong id="reactionPowerDisplay">
-            0
-          </strong>
-        </div>
+      <!-- ROLL HEADER -->
 
+      <section class="roll-heading">
 
-        <div class="stat-card">
-          <span class="stat-label">
+        <div>
+
+          <p class="eyebrow">
+            CURRENT BATCH
+          </p>
+
+          <h1>
             Rolls
-          </span>
-
-          <strong id="rollsDisplay">
-            0
-          </strong>
-        </div>
-
-      </div>
-
-    </section>
-
-
-
-    <!-- ========================= -->
-    <!-- CHARACTER ROLL -->
-    <!-- ========================= -->
-
-    <section class="panel roll-panel">
-
-      <div class="section-heading">
-
-        <div>
-          <p class="eyebrow">
-            GACHA
-          </p>
-
-          <h2>
-            Current Roll
-          </h2>
-        </div>
-
-      </div>
-
-
-
-      <article
-        id="rollCard"
-        class="character-card empty-roll"
-      >
-
-
-        <!-- IMAGE -->
-
-        <div class="character-image-area">
-
-          <img
-            id="characterImage"
-            class="character-image hidden"
-            src=""
-            alt=""
-          >
-
-          <div
-            id="imagePlaceholder"
-            class="image-placeholder"
-          >
-            <span class="placeholder-symbol">
-              ✦
-            </span>
-
-            <span>
-              Character image
-            </span>
-          </div>
+          </h1>
 
         </div>
 
-
-
-        <!-- CHARACTER INFORMATION -->
-
-        <div class="character-content">
-
-          <div class="character-title-area">
-
-            <div>
-
-              <p
-                id="characterSeries"
-                class="character-series"
-              >
-                No series
-              </p>
-
-              <h2
-                id="characterName"
-                class="character-name"
-              >
-                No roll yet
-              </h2>
-
-            </div>
-
-
-            <div
-              id="claimBadge"
-              class="claim-badge unclaimed"
-            >
-              UNCLAIMED
-            </div>
-
-          </div>
-
-
-
-          <div class="character-details">
-
-
-            <div class="detail">
-
-              <span>
-                Rank
-              </span>
-
-              <strong id="characterRank">
-                —
-              </strong>
-
-            </div>
-
-
-            <div class="detail">
-
-              <span>
-                Value
-              </span>
-
-              <strong id="characterValue">
-                —
-              </strong>
-
-            </div>
-
-
-            <div class="detail">
-
-              <span>
-                Spawn Weight
-              </span>
-
-              <strong id="characterWeight">
-                —
-              </strong>
-
-            </div>
-
-
-            <div class="detail">
-
-              <span>
-                Keys
-              </span>
-
-              <strong id="characterKeys">
-                0
-              </strong>
-
-            </div>
-
-
-          </div>
-
-
-          <div class="roll-actions">
-
-            <button
-              id="rollButton"
-              class="big-roll-button"
-              onclick="rollCharacter()"
-            >
-              ROLL
-            </button>
-
-          </div>
-
-
-          <p
-            id="rollNotice"
-            class="roll-notice"
-          >
-            Load a save file before rolling.
-          </p>
-
-        </div>
-
-      </article>
-
-    </section>
-
-
-
-    <!-- ========================= -->
-    <!-- STEP 2 TEST / SAVE TOOLS -->
-    <!-- ========================= -->
-
-    <section class="panel">
-
-      <div class="section-heading">
-
-        <div>
-          <p class="eyebrow">
-            DEVELOPMENT
-          </p>
-
-          <h2>
-            Save Tools
-          </h2>
-        </div>
-
-      </div>
-
-
-      <p class="small-text">
-        These are still here for testing.
-        We can remove them later.
-      </p>
-
-
-      <div class="button-row">
 
         <button
-          class="secondary-button"
-          onclick="testAddCurrency()"
+          id="generateRollsButton"
+          class="new-batch-button"
+          onclick="generateRollBatch()"
         >
-          +100 Currency
+          Roll Batch
         </button>
 
+      </section>
+
+
+
+      <!-- CARD POSITION -->
+
+      <div class="batch-status">
+
+        <span id="cardPosition">
+          No rolls yet
+        </span>
+
+        <span id="batchHint">
+          Generate your available rolls
+        </span>
+
+      </div>
+
+
+
+      <!-- HORIZONTAL CARD RAIL -->
+
+      <section
+        id="rollRail"
+        class="roll-rail"
+      >
+
+        <article class="welcome-card">
+
+          <div class="welcome-symbol">
+            ◈
+          </div>
+
+          <h2>
+            Ready to roll
+          </h2>
+
+          <p>
+            Your results will appear here as a swipeable card collection.
+          </p>
+
+        </article>
+
+      </section>
+
+
+    </main>
+
+
+
+    <!-- ======================================= -->
+    <!-- COLLECTION -->
+    <!-- ======================================= -->
+
+    <main
+      id="page-collection"
+      class="game-page"
+    >
+
+      <section class="empty-page">
+
+        <p class="eyebrow">
+          COLLECTION
+        </p>
+
+        <h1>
+          Claimed Characters
+        </h1>
+
+        <p>
+          Your character collection will live here.
+        </p>
+
+        <strong id="collectionCount">
+          0 claimed
+        </strong>
+
+      </section>
+
+    </main>
+
+
+
+    <!-- ======================================= -->
+    <!-- WISHLIST -->
+    <!-- ======================================= -->
+
+    <main
+      id="page-wishlist"
+      class="game-page"
+    >
+
+      <section class="empty-page">
+
+        <p class="eyebrow">
+          WISHLIST
+        </p>
+
+        <h1>
+          Wishes
+        </h1>
+
+        <p>
+          Wishlist and Starwish management will be built here.
+        </p>
+
+      </section>
+
+    </main>
+
+
+
+    <!-- ======================================= -->
+    <!-- TOWER -->
+    <!-- ======================================= -->
+
+    <main
+      id="page-tower"
+      class="game-page"
+    >
+
+      <section class="empty-page">
+
+        <p class="eyebrow">
+          INFINITE TOWER
+        </p>
+
+        <h1>
+          Floor
+          <span id="towerDisplay">
+            1
+          </span>
+        </h1>
+
+        <p>
+          Tower construction comes later.
+        </p>
+
+      </section>
+
+    </main>
+
+
+
+    <!-- ======================================= -->
+    <!-- SHOP -->
+    <!-- ======================================= -->
+
+    <main
+      id="page-shop"
+      class="game-page"
+    >
+
+      <section class="empty-page">
+
+        <p class="eyebrow">
+          SHOP
+        </p>
+
+        <h1>
+          Upgrades
+        </h1>
+
+        <p>
+          Upgrade purchases will appear here.
+        </p>
+
+      </section>
+
+    </main>
+
+
+
+    <!-- ======================================= -->
+    <!-- BADGES -->
+    <!-- ======================================= -->
+
+    <main
+      id="page-badges"
+      class="game-page"
+    >
+
+      <section class="empty-page">
+
+        <p class="eyebrow">
+          BADGES
+        </p>
+
+        <h1>
+          Badge Collection
+        </h1>
+
+        <p>
+          Your eight badge paths will appear here.
+        </p>
+
+      </section>
+
+    </main>
+
+
+
+    <!-- ======================================= -->
+    <!-- SPHERES -->
+    <!-- ======================================= -->
+
+    <main
+      id="page-spheres"
+      class="game-page"
+    >
+
+      <section class="empty-page">
+
+        <p class="eyebrow">
+          SPHERES
+        </p>
+
+        <h1>
+          Sphere System
+        </h1>
+
+        <p>
+          Character and global sphere upgrades will appear here.
+        </p>
+
+      </section>
+
+    </main>
+
+
+
+    <!-- ======================================= -->
+    <!-- GAMBLE -->
+    <!-- ======================================= -->
+
+    <main
+      id="page-gamble"
+      class="game-page"
+    >
+
+      <section class="empty-page">
+
+        <p class="eyebrow">
+          GAMBLE
+        </p>
+
+        <h1>
+          Gambling
+        </h1>
+
+        <p>
+          Gambling will be added later.
+        </p>
+
+      </section>
+
+    </main>
+
+
+
+    <!-- ======================================= -->
+    <!-- STATS -->
+    <!-- ======================================= -->
+
+    <main
+      id="page-stats"
+      class="game-page"
+    >
+
+      <section class="stats-page">
+
+        <p class="eyebrow">
+          PROFILE
+        </p>
+
+        <h1>
+          Statistics
+        </h1>
+
+
+        <div class="stats-grid">
+
+
+          <article>
+
+            <span>
+              Total Rolls
+            </span>
+
+            <strong id="totalRollsDisplay">
+              0
+            </strong>
+
+          </article>
+
+
+          <article>
+
+            <span>
+              Characters Seen
+            </span>
+
+            <strong id="seenDisplay">
+              0
+            </strong>
+
+          </article>
+
+
+          <article>
+
+            <span>
+              Characters Claimed
+            </span>
+
+            <strong id="claimedDisplay">
+              0
+            </strong>
+
+          </article>
+
+
+          <article>
+
+            <span>
+              Wishlist
+            </span>
+
+            <strong id="wishlistDisplay">
+              0
+            </strong>
+
+          </article>
+
+
+          <article>
+
+            <span>
+              Currency Earned
+            </span>
+
+            <strong id="currencyEarnedDisplay">
+              0
+            </strong>
+
+          </article>
+
+
+          <article>
+
+            <span>
+              Reaction Power
+            </span>
+
+            <strong id="reactionPowerDisplay">
+              100 / 100
+            </strong>
+
+          </article>
+
+
+        </div>
+
+      </section>
+
+    </main>
+
+
+
+    <!-- ======================================= -->
+    <!-- SAVE -->
+    <!-- ======================================= -->
+
+    <main
+      id="page-save"
+      class="game-page"
+    >
+
+      <section class="save-page">
+
+        <p class="eyebrow">
+          SAVE FILE
+        </p>
+
+        <h1>
+          Save Management
+        </h1>
+
+
+        <p id="saveStatus">
+          Autosave enabled
+        </p>
+
+
         <button
-          class="secondary-button"
+          class="large-action"
           onclick="saveGame(true)"
         >
           Save Now
         </button>
 
-      </div>
 
-    </section>
+        <button
+          class="large-action secondary"
+          onclick="showSaveScreen()"
+        >
+          Return to Save Select
+        </button>
 
+      </section>
+
+    </main>
+
+
+  </section>
+
+
+
+  <!-- ======================================= -->
+  <!-- SAVE OPTIONS MODAL -->
+  <!-- ======================================= -->
+
+  <div
+    id="saveModal"
+    class="modal hidden"
+  >
+
+    <div class="modal-card">
+
+      <p class="eyebrow">
+        SAVE OPTIONS
+      </p>
+
+      <h2 id="saveModalTitle">
+        Save 1
+      </h2>
+
+
+      <button
+        id="overwriteModalButton"
+        class="modal-button"
+        onclick="overwriteSelectedSave()"
+      >
+        Copy Current Save Here
+      </button>
+
+
+      <button
+        class="modal-button danger"
+        onclick="resetSelectedSave()"
+      >
+        Reset Save
+      </button>
+
+
+      <button
+        class="modal-button subtle"
+        onclick="closeSaveMenu()"
+      >
+        Cancel
+      </button>
+
+    </div>
 
   </div>
 
 
-  <!--
-  data.js MUST load first.
 
-  It will contain:
-  - player defaults
-  - characters
-  - currency rolls
-  - empty :( rolls
-  -->
+  <script src="data.js?v=10"></script>
 
-  <script src="data.js?v=3"></script>
-<script src="app.js?v=3"></script>
+  <script src="app.js?v=10"></script>
+
 
 </body>
 
