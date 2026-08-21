@@ -1884,31 +1884,10 @@ const characterSeriesPart1 = [
 
     ]
 
-  }
 
-];
+  },
 
-
-/*
-==================================================
-END OF DATA.JS — PART 1
-
-DO NOT PUT ANYTHING ELSE HERE YOURSELF.
-
-PART 2 GETS PASTED DIRECTLY UNDER THIS LINE.
-==================================================
-*/
-
-/*
-==================================================
-PRIVATE GACHA
-DATA.JS — PART 2 OF 2
-==================================================
-*/
-
-
-const characterSeriesPart2 = [
-
+  
   {
     series: "ZENLESS ZONE ZERO",
 
@@ -3808,9 +3787,15 @@ console.log(
   databaseInfo.totalRolls
 );
 
+console.log("DATA.JS FINISHED LOADING");
 
-/*
-==================================================
-END OF DATA.JS
-==================================================
-*/
+alert(
+  "Characters: " +
+  characterDatabase.length +
+  "\nCurrency: " +
+  currencyRolls.length +
+  "\nEmpty: " +
+  emptyRolls.length +
+  "\nTotal: " +
+  rollDatabase.length
+);
