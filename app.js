@@ -1,8 +1,8 @@
 /*
-=============================================
+==================================================
 PRIVATE GACHA
-MAIN APPLICATION
-=============================================
+APP.JS
+==================================================
 */
 
 
@@ -10,16 +10,17 @@ let player = null;
 
 let activeSaveSlot = null;
 
-let currentRoll = null;
+let currentBatch = [];
+
+let selectedSaveSlot = null;
 
 
 
 /*
-=============================================
-SAVE NAMES
-=============================================
+==================================================
+SAVE KEY
+==================================================
 */
-
 
 function getSaveName(slot) {
 
@@ -30,37 +31,194 @@ function getSaveName(slot) {
 
 
 /*
-=============================================
-LOAD SAVE
-=============================================
+==================================================
+OLD SAVE MIGRATION
+==================================================
+
+This adds newer properties to saves created
+before this version.
+
+That means you should NOT need to reset
+your existing saves.
+==================================================
 */
 
+function ensurePlayerShape() {
 
-function loadSave(slot) {
-
-  const saveName =
-    getSaveName(slot);
-
-
-  const savedData =
-    localStorage.getItem(
-      saveName
-    );
+  if (!player) {
+    return;
+  }
 
 
   /*
-  If this save exists,
-  load it.
+  Roll system.
   */
+
+  if (!player.rolls) {
+
+    player.rolls = {
+
+      available: 10,
+
+      maximum: 10
+
+    };
+
+  }
+
+
+  if (
+    typeof player.rolls.available
+    !== "number"
+  ) {
+
+    player.rolls.available = 10;
+
+  }
+
+
+  if (
+    typeof player.rolls.maximum
+    !== "number"
+  ) {
+
+    player.rolls.maximum = 10;
+
+  }
+
+
+  /*
+  Claims.
+  */
+
+  if (!player.claims) {
+
+    player.claims = {
+
+      available: 1,
+
+      maximum: 1
+
+    };
+
+  }
+
+
+  /*
+  Collection.
+  */
+
+  if (
+    !Array.isArray(
+      player.claimedCharacters
+    )
+  ) {
+
+    player.claimedCharacters = [];
+
+  }
+
+
+  /*
+  Keys.
+  */
+
+  if (!player.keys) {
+
+    player.keys = {};
+
+  }
+
+
+  /*
+  Wishlist.
+  */
+
+  if (
+    !Array.isArray(player.wishlist)
+  ) {
+
+    player.wishlist = [];
+
+  }
+
+
+  /*
+  Statistics.
+  */
+
+  if (!player.statistics) {
+
+    player.statistics = {};
+
+  }
+
+
+  const statDefaults = {
+
+    totalRolls: 0,
+
+    totalClaims: 0,
+
+    totalCharactersSeen: 0,
+
+    totalCurrencyEarned: 0,
+
+    totalCurrencySpent: 0,
+
+    totalReactions: 0,
+
+    totalKeysEarned: 0,
+
+    totalSpheresEarned: 0,
+
+    totalGambles: 0,
+
+    playTimeSeconds: 0
+
+  };
+
+
+  for (
+    const key in statDefaults
+  ) {
+
+    if (
+      typeof player.statistics[key]
+      !== "number"
+    ) {
+
+      player.statistics[key] =
+        statDefaults[key];
+
+    }
+
+  }
+
+}
+
+
+
+/*
+==================================================
+LOAD SAVE
+==================================================
+*/
+
+function loadSave(slot) {
+
+  const savedData =
+    localStorage.getItem(
+      getSaveName(slot)
+    );
+
 
   if (savedData !== null) {
 
     try {
 
       player =
-        JSON.parse(
-          savedData
-        );
+        JSON.parse(savedData);
 
     }
 
@@ -72,19 +230,11 @@ function loadSave(slot) {
         " appears to be damaged."
       );
 
-      console.error(error);
-
       return;
 
     }
 
   }
-
-
-  /*
-  If the slot is empty,
-  create a fresh player.
-  */
 
   else {
 
@@ -94,51 +244,52 @@ function loadSave(slot) {
   }
 
 
-  activeSaveSlot =
-    slot;
+  activeSaveSlot = slot;
+
+  currentBatch = [];
 
 
-  currentRoll =
-    null;
-
+  ensurePlayerShape();
 
   saveGame();
 
 
-  updateScreen();
-
-  updateSaveSlotInfo();
-
-  clearRollDisplay();
+  document
+    .getElementById("saveScreen")
+    .classList.add("hidden");
 
 
-  setStatus(
-    "Save " +
-    slot +
-    " loaded."
+  document
+    .getElementById("gameScreen")
+    .classList.remove("hidden");
+
+
+  showGamePage(
+    "rolls",
+    document.querySelector(
+      '[data-screen="rolls"]'
+    )
   );
 
 
-  document.getElementById(
-    "rollNotice"
-  ).textContent =
-    "Ready to roll.";
+  clearRollRail();
+
+  updateScreen();
 
 }
 
 
 
 /*
-=============================================
-SAVE GAME
-=============================================
+==================================================
+SAVE
+==================================================
 */
-
 
 function saveGame(showMessage = false) {
 
   if (
-    player === null ||
+    !player ||
     activeSaveSlot === null
   ) {
 
@@ -151,17 +302,13 @@ function saveGame(showMessage = false) {
     Date.now();
 
 
-  const saveText =
-    JSON.stringify(player);
-
-
   localStorage.setItem(
 
     getSaveName(
       activeSaveSlot
     ),
 
-    saveText
+    JSON.stringify(player)
 
   );
 
@@ -171,11 +318,18 @@ function saveGame(showMessage = false) {
 
   if (showMessage) {
 
-    setStatus(
-      "Save " +
-      activeSaveSlot +
-      " saved."
-    );
+    const status =
+      document.getElementById(
+        "saveStatus"
+      );
+
+
+    if (status) {
+
+      status.textContent =
+        "Saved successfully.";
+
+    }
 
   }
 
@@ -184,18 +338,216 @@ function saveGame(showMessage = false) {
 
 
 /*
-=============================================
-COPY CURRENT SAVE INTO ANOTHER SLOT
-=============================================
+==================================================
+SAVE SELECT
+==================================================
 */
 
+function showSaveScreen() {
 
-function overwriteSave(slot) {
+  saveGame();
 
-  if (player === null) {
+
+  document
+    .getElementById("gameScreen")
+    .classList.add("hidden");
+
+
+  document
+    .getElementById("saveScreen")
+    .classList.remove("hidden");
+
+
+  updateSaveSlotInfo();
+
+}
+
+
+
+/*
+==================================================
+SAVE SLOT INFORMATION
+==================================================
+*/
+
+function updateSaveSlotInfo() {
+
+  for (
+    let slot = 1;
+    slot <= 3;
+    slot++
+  ) {
+
+    const raw =
+      localStorage.getItem(
+        getSaveName(slot)
+      );
+
+
+    const title =
+      document.getElementById(
+        "slot" + slot + "Title"
+      );
+
+
+    const info =
+      document.getElementById(
+        "slot" + slot + "Info"
+      );
+
+
+    const action =
+      document.getElementById(
+        "slot" + slot + "Action"
+      );
+
+
+    if (!raw) {
+
+      title.textContent =
+        "New Save";
+
+
+      info.textContent =
+        "Empty";
+
+
+      action.textContent =
+        "START";
+
+
+      continue;
+
+    }
+
+
+    try {
+
+      const save =
+        JSON.parse(raw);
+
+
+      const currency =
+        save.currency?.kakera
+        ?? 0;
+
+
+      const rolls =
+        save.statistics?.totalRolls
+        ?? 0;
+
+
+      const claimed =
+        save.claimedCharacters?.length
+        ?? 0;
+
+
+      title.textContent =
+        "Continue";
+
+
+      info.textContent =
+
+        formatNumber(currency)
+
+        +
+
+        " ◈   ·   "
+
+        +
+
+        formatNumber(rolls)
+
+        +
+
+        " rolls   ·   "
+
+        +
+
+        formatNumber(claimed)
+
+        +
+
+        " claimed";
+
+
+      action.textContent =
+        "CONTINUE";
+
+    }
+
+    catch (error) {
+
+      title.textContent =
+        "Damaged Save";
+
+
+      info.textContent =
+        "Unable to read save data";
+
+
+      action.textContent =
+        "OPEN";
+
+    }
+
+  }
+
+}
+
+
+
+/*
+==================================================
+SAVE OPTIONS MODAL
+==================================================
+*/
+
+function openSaveMenu(slot) {
+
+  selectedSaveSlot = slot;
+
+
+  document.getElementById(
+    "saveModalTitle"
+  ).textContent =
+    "Save " + slot;
+
+
+  document
+    .getElementById("saveModal")
+    .classList.remove("hidden");
+
+}
+
+
+function closeSaveMenu() {
+
+  document
+    .getElementById("saveModal")
+    .classList.add("hidden");
+
+
+  selectedSaveSlot = null;
+
+}
+
+
+function overwriteSelectedSave() {
+
+  if (
+    selectedSaveSlot === null
+  ) {
+
+    return;
+
+  }
+
+
+  if (!player) {
 
     alert(
-      "Load a save file first."
+      "Load a save first before copying progress."
     );
 
     return;
@@ -206,81 +558,81 @@ function overwriteSave(slot) {
   const confirmed =
     confirm(
 
-      "Copy your current progress into Save " +
-      slot +
-      "?\n\n" +
+      "Replace Save "
 
-      "Anything already stored there will be replaced."
+      +
+
+      selectedSaveSlot
+
+      +
+
+      " with your current progress?"
 
     );
 
 
   if (!confirmed) {
-
     return;
-
   }
 
 
-  const copiedPlayer =
+  const copy =
     JSON.parse(
       JSON.stringify(player)
     );
 
 
-  copiedPlayer.lastSavedAt =
-    Date.now();
-
-
   localStorage.setItem(
 
-    getSaveName(slot),
+    getSaveName(
+      selectedSaveSlot
+    ),
 
-    JSON.stringify(
-      copiedPlayer
-    )
+    JSON.stringify(copy)
 
   );
 
+
+  closeSaveMenu();
 
   updateSaveSlotInfo();
-
-
-  setStatus(
-    "Current progress copied to Save " +
-    slot +
-    "."
-  );
 
 }
 
 
+function resetSelectedSave() {
 
-/*
-=============================================
-RESET SAVE
-=============================================
-*/
+  if (
+    selectedSaveSlot === null
+  ) {
+
+    return;
+
+  }
 
 
-function resetSave(slot) {
+  const slot =
+    selectedSaveSlot;
+
 
   const confirmed =
     confirm(
 
-      "Reset Save " +
-      slot +
-      "?\n\n" +
+      "Permanently erase Save "
 
-      "Everything in this slot will be permanently erased."
+      +
+
+      slot
+
+      +
+
+      "?"
 
     );
 
 
   if (!confirmed) {
-
     return;
-
   }
 
 
@@ -297,152 +649,235 @@ function resetSave(slot) {
 
     activeSaveSlot = null;
 
-    currentRoll = null;
-
-    clearRollDisplay();
+    currentBatch = [];
 
   }
 
 
-  updateScreen();
+  closeSaveMenu();
 
   updateSaveSlotInfo();
 
+}
 
-  setStatus(
-    "Save " +
-    slot +
-    " was reset."
+
+
+/*
+==================================================
+PAGE NAVIGATION
+==================================================
+*/
+
+function showGamePage(
+  pageName,
+  button
+) {
+
+  const pages =
+    document.querySelectorAll(
+      ".game-page"
+    );
+
+
+  pages.forEach(
+    function (page) {
+
+      page.classList.remove(
+        "active-page"
+      );
+
+    }
   );
 
-}
 
-
-
-/*
-=============================================
-STATUS MESSAGE
-=============================================
-*/
-
-
-function setStatus(message) {
-
-  document.getElementById(
-    "saveStatus"
-  ).textContent =
-    message;
-
-}
-
-
-
-/*
-=============================================
-PLAYER SCREEN
-=============================================
-*/
-
-
-function updateScreen() {
-
-  /*
-  No player loaded.
-  */
-
-  if (player === null) {
-
+  const target =
     document.getElementById(
-      "currentSlot"
-    ).textContent =
-      "—";
+      "page-" + pageName
+    );
 
 
-    document.getElementById(
-      "currencyDisplay"
-    ).textContent =
-      "0";
+  if (target) {
 
-
-    document.getElementById(
-      "claimedDisplay"
-    ).textContent =
-      "0";
-
-
-    document.getElementById(
-      "wishlistDisplay"
-    ).textContent =
-      "0";
-
-
-    document.getElementById(
-      "towerDisplay"
-    ).textContent =
-      "—";
-
-
-    document.getElementById(
-      "reactionPowerDisplay"
-    ).textContent =
-      "0";
-
-
-    document.getElementById(
-      "rollsDisplay"
-    ).textContent =
-      "0";
-
-
-    return;
+    target.classList.add(
+      "active-page"
+    );
 
   }
 
 
-
-  /*
-  Player loaded.
-  */
-
-
-  document.getElementById(
-    "currentSlot"
-  ).textContent =
-    activeSaveSlot;
-
-
-  document.getElementById(
-    "currencyDisplay"
-  ).textContent =
-    formatNumber(
-      player.currency.kakera
+  const navButtons =
+    document.querySelectorAll(
+      ".nav-item"
     );
 
 
-  document.getElementById(
-    "claimedDisplay"
-  ).textContent =
-    player.claimedCharacters.length;
+  navButtons.forEach(
+    function (navButton) {
+
+      navButton.classList.remove(
+        "active"
+      );
+
+    }
+  );
 
 
-  document.getElementById(
-    "wishlistDisplay"
-  ).textContent =
-    player.wishlist.length;
+  if (button) {
+
+    button.classList.add(
+      "active"
+    );
+
+  }
+
+}
 
 
-  document.getElementById(
-    "towerDisplay"
-  ).textContent =
-    player.tower.currentFloor;
+
+/*
+==================================================
+UPDATE UI
+==================================================
+*/
+
+function updateScreen() {
+
+  if (!player) {
+    return;
+  }
 
 
-  document.getElementById(
-    "reactionPowerDisplay"
-  ).textContent =
+  ensurePlayerShape();
+
+
+  setText(
+    "currentSlot",
+    activeSaveSlot
+  );
+
+
+  setText(
+
+    "currencyDisplay",
 
     formatNumber(
-      player.reactionPower.current
+      player.currency.kakera
+    )
+
+  );
+
+
+  setText(
+
+    "rollsAvailableDisplay",
+
+    formatNumber(
+      player.rolls.available
+    )
+
+  );
+
+
+  setText(
+
+    "claimsDisplay",
+
+    formatNumber(
+      player.claims.available
+    )
+
+  );
+
+
+  setText(
+
+    "towerDisplay",
+
+    player.tower?.currentFloor
+    ?? 1
+
+  );
+
+
+  setText(
+
+    "totalRollsDisplay",
+
+    formatNumber(
+      player.statistics.totalRolls
+    )
+
+  );
+
+
+  setText(
+
+    "seenDisplay",
+
+    formatNumber(
+      player.statistics
+        .totalCharactersSeen
+    )
+
+  );
+
+
+  setText(
+
+    "claimedDisplay",
+
+    formatNumber(
+      player.claimedCharacters.length
+    )
+
+  );
+
+
+  setText(
+
+    "collectionCount",
+
+    formatNumber(
+      player.claimedCharacters.length
+    )
+
+    +
+
+    " claimed"
+
+  );
+
+
+  setText(
+
+    "wishlistDisplay",
+
+    formatNumber(
+      player.wishlist.length
+    )
+
+  );
+
+
+  setText(
+
+    "currencyEarnedDisplay",
+
+    formatNumber(
+      player.statistics
+        .totalCurrencyEarned
+    )
+
+  );
+
+
+  setText(
+
+    "reactionPowerDisplay",
+
+    formatNumber(
+      player.reactionPower?.current
+      ?? 0
     )
 
     +
@@ -452,116 +887,23 @@ function updateScreen() {
     +
 
     formatNumber(
-      player.reactionPower.maximum
+      player.reactionPower?.maximum
+      ?? 0
+    )
+
+  );
+
+
+  const batchButton =
+    document.getElementById(
+      "generateRollsButton"
     );
 
 
-  document.getElementById(
-    "rollsDisplay"
-  ).textContent =
-    formatNumber(
-      player.statistics.totalRolls
-    );
+  if (batchButton) {
 
-}
-
-
-
-/*
-=============================================
-SAVE SLOT INFORMATION
-=============================================
-*/
-
-
-function updateSaveSlotInfo() {
-
-  for (
-    let slot = 1;
-    slot <= 3;
-    slot++
-  ) {
-
-    const savedData =
-      localStorage.getItem(
-        getSaveName(slot)
-      );
-
-
-    const infoElement =
-      document.getElementById(
-        "slot" +
-        slot +
-        "Info"
-      );
-
-
-    if (savedData === null) {
-
-      infoElement.textContent =
-        "Empty";
-
-      continue;
-
-    }
-
-
-    try {
-
-      const save =
-        JSON.parse(
-          savedData
-        );
-
-
-      const rolls =
-        save.statistics?.totalRolls
-        ?? 0;
-
-
-      const currency =
-        save.currency?.kakera
-        ?? 0;
-
-
-      const claimed =
-        save.claimedCharacters?.length
-        ?? 0;
-
-
-      infoElement.textContent =
-
-        formatNumber(currency)
-
-        +
-
-        " ka · "
-
-        +
-
-        formatNumber(rolls)
-
-        +
-
-        " rolls · "
-
-        +
-
-        formatNumber(claimed)
-
-        +
-
-        " claimed";
-
-    }
-
-
-    catch (error) {
-
-      infoElement.textContent =
-        "Save damaged";
-
-    }
+    batchButton.disabled =
+      player.rolls.available <= 0;
 
   }
 
@@ -570,16 +912,31 @@ function updateSaveSlotInfo() {
 
 
 /*
-=============================================
-NUMBER FORMATTING
-=============================================
+==================================================
+SMALL UI HELPERS
+==================================================
 */
 
+function setText(id, value) {
 
-function formatNumber(number) {
+  const element =
+    document.getElementById(id);
+
+
+  if (element) {
+
+    element.textContent =
+      value;
+
+  }
+
+}
+
+
+function formatNumber(value) {
 
   return Number(
-    number
+    value ?? 0
   ).toLocaleString();
 
 }
@@ -587,777 +944,28 @@ function formatNumber(number) {
 
 
 /*
-=============================================
-ROLL SYSTEM
-=============================================
+==================================================
+GENERATE ROLL BATCH
+==================================================
 
-The actual database will be added to
-data.js in the next step.
-
-This function already expects an array
-named:
-
-rollDatabase
-
-Each entry in that array will have a
-type:
-
-"character"
-"currency"
-"empty"
-
-=============================================
-*/
-
-
-function rollCharacter() {
-
-  if (player === null) {
-
-    alert(
-      "Load a save file before rolling."
-    );
-
-    return;
-
-  }
-
-
-  /*
-  Make sure data.js actually contains
-  the database before attempting a roll.
-  */
-
-  if (
-    typeof rollDatabase === "undefined"
-    ||
-    !Array.isArray(rollDatabase)
-    ||
-    rollDatabase.length === 0
-  ) {
-
-    document.getElementById(
-      "rollNotice"
-    ).textContent =
-      "Character database has not been added yet.";
-
-    return;
-
-  }
-
-
-  /*
-  Pick an entry using spawn weights.
-  */
-
-  const result =
-    weightedRandom(
-      rollDatabase
-    );
-
-
-  currentRoll =
-    result;
-
-
-  /*
-  Every result counts as a roll.
-  */
-
-  player.statistics.totalRolls += 1;
-
-
-  /*
-  Characters seen can be tracked
-  separately later.
-  */
-
-  if (
-    result.type === "character"
-  ) {
-
-    player.statistics
-      .totalCharactersSeen += 1;
-
-  }
-
-
-  /*
-  Currency results immediately give
-  currency to the player.
-  */
-
-  if (
-    result.type === "currency"
-  ) {
-
-    const amount =
-      result.amount ?? 0;
-
-
-    player.currency.kakera +=
-      amount;
-
-
-    player.statistics
-      .totalCurrencyEarned +=
-      amount;
-
-  }
-
-
-  displayRoll(
-    result
-  );
-
-
-  updateScreen();
-
-  saveGame();
-
-}
-
-
-
-/*
-=============================================
-WEIGHTED RANDOM SELECTION
-=============================================
-
-Instead of every database entry having
-the exact same chance, each result has
-a spawnWeight.
+Instead of pressing Roll for every character,
+we use ALL currently available rolls.
 
 Example:
 
-spawnWeight: 1
-spawnWeight: 5
-spawnWeight: 20
+10 rolls available
+→
+10 cards are created
+→
+rolls available becomes 0
 
-Higher number =
-more likely to appear.
-
-=============================================
+Later we'll add regeneration and upgrades.
+==================================================
 */
 
+function generateRollBatch() {
 
-function weightedRandom(database) {
-
-  let totalWeight = 0;
-
-
-  for (
-    const entry of database
-  ) {
-
-    totalWeight +=
-      Number(
-        entry.spawnWeight ?? 1
-      );
-
-  }
-
-
-  let random =
-    Math.random()
-    *
-    totalWeight;
-
-
-  for (
-    const entry of database
-  ) {
-
-    random -=
-      Number(
-        entry.spawnWeight ?? 1
-      );
-
-
-    if (random <= 0) {
-
-      return entry;
-
-    }
-
-  }
-
-
-  /*
-  Safety fallback.
-  */
-
-  return database[
-    database.length - 1
-  ];
-
-}
-
-
-
-/*
-=============================================
-DISPLAY ROLL
-=============================================
-*/
-
-
-function displayRoll(result) {
-
-  /*
-  CHARACTER
-  */
-
-  if (
-    result.type === "character"
-  ) {
-
-    displayCharacter(
-      result
-    );
-
-    return;
-
-  }
-
-
-  /*
-  CURRENCY
-  */
-
-  if (
-    result.type === "currency"
-  ) {
-
-    displayCurrencyRoll(
-      result
-    );
-
-    return;
-
-  }
-
-
-  /*
-  EMPTY :(
-  */
-
-  displayEmptyRoll(
-    result
-  );
-
-}
-
-
-
-/*
-=============================================
-DISPLAY CHARACTER
-=============================================
-*/
-
-
-function displayCharacter(character) {
-
-  const isClaimed =
-    player.claimedCharacters.includes(
-      character.id
-    );
-
-
-  const keys =
-    player.keys[
-      character.id
-    ]
-    ?? 0;
-
-
-  document.getElementById(
-    "characterSeries"
-  ).textContent =
-    character.series;
-
-
-  document.getElementById(
-    "characterName"
-  ).textContent =
-    character.name;
-
-
-  document.getElementById(
-    "characterRank"
-  ).textContent =
-    "#" +
-    formatNumber(
-      character.rank
-    );
-
-
-  document.getElementById(
-    "characterValue"
-  ).textContent =
-    formatNumber(
-      character.value
-    )
-    +
-    " ka";
-
-
-  document.getElementById(
-    "characterWeight"
-  ).textContent =
-    formatNumber(
-      character.spawnWeight
-    );
-
-
-  document.getElementById(
-    "characterKeys"
-  ).textContent =
-    formatNumber(
-      keys
-    );
-
-
-  /*
-  Claim status.
-  */
-
-  const claimBadge =
-    document.getElementById(
-      "claimBadge"
-    );
-
-
-  if (isClaimed) {
-
-    claimBadge.textContent =
-      "CLAIMED";
-
-    claimBadge.className =
-      "claim-badge claimed";
-
-  }
-
-  else {
-
-    claimBadge.textContent =
-      "UNCLAIMED";
-
-    claimBadge.className =
-      "claim-badge unclaimed";
-
-  }
-
-
-  /*
-  Character image.
-  */
-
-  showCharacterImage(
-    character
-  );
-
-
-  document.getElementById(
-    "rollNotice"
-  ).textContent =
-    "Character rolled.";
-
-}
-
-
-
-/*
-=============================================
-CHARACTER IMAGE
-=============================================
-
-A character can eventually have:
-
-image: "images/nami.jpg"
-
-or
-
-image: "https://..."
-
-If image is blank, the placeholder
-will appear instead.
-=============================================
-*/
-
-
-function showCharacterImage(character) {
-
-  const image =
-    document.getElementById(
-      "characterImage"
-    );
-
-
-  const placeholder =
-    document.getElementById(
-      "imagePlaceholder"
-    );
-
-
-  if (
-    character.image
-    &&
-    character.image.trim() !== ""
-  ) {
-
-    image.src =
-      character.image;
-
-
-    image.alt =
-      character.name;
-
-
-    image.classList.remove(
-      "hidden"
-    );
-
-
-    placeholder.classList.add(
-      "hidden"
-    );
-
-
-    /*
-    If the image URL is broken,
-    restore the placeholder.
-    */
-
-    image.onerror =
-      function () {
-
-        image.classList.add(
-          "hidden"
-        );
-
-        placeholder.classList.remove(
-          "hidden"
-        );
-
-      };
-
-  }
-
-  else {
-
-    image.src =
-      "";
-
-
-    image.classList.add(
-      "hidden"
-    );
-
-
-    placeholder.classList.remove(
-      "hidden"
-    );
-
-  }
-
-}
-
-
-
-/*
-=============================================
-DISPLAY CURRENCY RESULT
-=============================================
-*/
-
-
-function displayCurrencyRoll(result) {
-
-  document.getElementById(
-    "characterSeries"
-  ).textContent =
-    "BONUS";
-
-
-  document.getElementById(
-    "characterName"
-  ).textContent =
-
-    "+"
-
-    +
-
-    formatNumber(
-      result.amount
-    )
-
-    +
-
-    " Currency";
-
-
-  document.getElementById(
-    "characterRank"
-  ).textContent =
-    "—";
-
-
-  document.getElementById(
-    "characterValue"
-  ).textContent =
-
-    "+"
-
-    +
-
-    formatNumber(
-      result.amount
-    )
-
-    +
-
-    " ka";
-
-
-  document.getElementById(
-    "characterWeight"
-  ).textContent =
-    formatNumber(
-      result.spawnWeight
-    );
-
-
-  document.getElementById(
-    "characterKeys"
-  ).textContent =
-    "—";
-
-
-  const claimBadge =
-    document.getElementById(
-      "claimBadge"
-    );
-
-
-  claimBadge.textContent =
-    "BONUS";
-
-
-  claimBadge.className =
-    "claim-badge unclaimed";
-
-
-  hideCharacterImage();
-
-
-  document.getElementById(
-    "rollNotice"
-  ).textContent =
-
-    "+"
-
-    +
-
-    formatNumber(
-      result.amount
-    )
-
-    +
-
-    " currency added.";
-
-}
-
-
-
-/*
-=============================================
-DISPLAY EMPTY :( RESULT
-=============================================
-*/
-
-
-function displayEmptyRoll(result) {
-
-  document.getElementById(
-    "characterSeries"
-  ).textContent =
-    "NOTHING";
-
-
-  document.getElementById(
-    "characterName"
-  ).textContent =
-    ":(";
-
-
-  document.getElementById(
-    "characterRank"
-  ).textContent =
-    "—";
-
-
-  document.getElementById(
-    "characterValue"
-  ).textContent =
-    "0 ka";
-
-
-  document.getElementById(
-    "characterWeight"
-  ).textContent =
-    formatNumber(
-      result.spawnWeight ?? 1
-    );
-
-
-  document.getElementById(
-    "characterKeys"
-  ).textContent =
-    "—";
-
-
-  const claimBadge =
-    document.getElementById(
-      "claimBadge"
-    );
-
-
-  claimBadge.textContent =
-    "EMPTY";
-
-
-  claimBadge.className =
-    "claim-badge unclaimed";
-
-
-  hideCharacterImage();
-
-
-  document.getElementById(
-    "rollNotice"
-  ).textContent =
-    "Nothing this time.";
-
-}
-
-
-
-/*
-=============================================
-HIDE CHARACTER IMAGE
-=============================================
-*/
-
-
-function hideCharacterImage() {
-
-  const image =
-    document.getElementById(
-      "characterImage"
-    );
-
-
-  const placeholder =
-    document.getElementById(
-      "imagePlaceholder"
-    );
-
-
-  image.src =
-    "";
-
-
-  image.classList.add(
-    "hidden"
-  );
-
-
-  placeholder.classList.remove(
-    "hidden"
-  );
-
-}
-
-
-
-/*
-=============================================
-CLEAR ROLL DISPLAY
-=============================================
-*/
-
-
-function clearRollDisplay() {
-
-  document.getElementById(
-    "characterSeries"
-  ).textContent =
-    "No series";
-
-
-  document.getElementById(
-    "characterName"
-  ).textContent =
-    "No roll yet";
-
-
-  document.getElementById(
-    "characterRank"
-  ).textContent =
-    "—";
-
-
-  document.getElementById(
-    "characterValue"
-  ).textContent =
-    "—";
-
-
-  document.getElementById(
-    "characterWeight"
-  ).textContent =
-    "—";
-
-
-  document.getElementById(
-    "characterKeys"
-  ).textContent =
-    "0";
-
-
-  const claimBadge =
-    document.getElementById(
-      "claimBadge"
-    );
-
-
-  claimBadge.textContent =
-    "UNCLAIMED";
-
-
-  claimBadge.className =
-    "claim-badge unclaimed";
-
-
-  hideCharacterImage();
-
-}
-
-
-
-/*
-=============================================
-TEMPORARY CURRENCY TEST
-=============================================
-*/
-
-
-function testAddCurrency() {
-
-  if (player === null) {
+  if (!player) {
 
     alert(
       "Load a save first."
@@ -1368,14 +976,100 @@ function testAddCurrency() {
   }
 
 
-  player.currency.kakera +=
-    100;
+  if (
+    typeof rollDatabase === "undefined"
+    ||
+    !Array.isArray(rollDatabase)
+    ||
+    rollDatabase.length === 0
+  ) {
+
+    alert(
+      "The roll database is unavailable."
+    );
+
+    return;
+
+  }
 
 
-  player.statistics
-    .totalCurrencyEarned +=
-    100;
+  const amount =
+    Math.floor(
+      player.rolls.available
+    );
 
+
+  if (amount <= 0) {
+
+    alert(
+      "You currently have no rolls available."
+    );
+
+    return;
+
+  }
+
+
+  currentBatch = [];
+
+
+  for (
+    let i = 0;
+    i < amount;
+    i++
+  ) {
+
+    const result =
+      equalRandomResult();
+
+
+    currentBatch.push(
+      result
+    );
+
+
+    player.statistics.totalRolls += 1;
+
+
+    if (
+      result.type === "character"
+    ) {
+
+      player.statistics
+        .totalCharactersSeen += 1;
+
+    }
+
+
+    /*
+    Currency is awarded immediately.
+    */
+
+    if (
+      result.type === "currency"
+    ) {
+
+      player.currency.kakera +=
+        result.amount;
+
+
+      player.statistics
+        .totalCurrencyEarned +=
+        result.amount;
+
+    }
+
+  }
+
+
+  /*
+  All available rolls were consumed.
+  */
+
+  player.rolls.available = 0;
+
+
+  renderRollBatch();
 
   updateScreen();
 
@@ -1386,21 +1080,785 @@ function testAddCurrency() {
 
 
 /*
-=============================================
-AUTOSAVE
-=============================================
+==================================================
+EQUAL RANDOM RESULT
+==================================================
+
+EVERY ENTRY in rollDatabase is equally likely.
+
+Characters:
+1 entry each
+
+Currency amount:
+2 entries each
+
+:( result:
+1000 entries total
+
+This is exactly the probability rule you wanted.
+==================================================
 */
 
+function equalRandomResult() {
+
+  const randomIndex =
+    Math.floor(
+
+      Math.random()
+
+      *
+
+      rollDatabase.length
+
+    );
+
+
+  return rollDatabase[
+    randomIndex
+  ];
+
+}
+
+
+
+/*
+==================================================
+RENDER BATCH
+==================================================
+*/
+
+function renderRollBatch() {
+
+  const rail =
+    document.getElementById(
+      "rollRail"
+    );
+
+
+  rail.innerHTML = "";
+
+
+  currentBatch.forEach(
+
+    function (result, index) {
+
+      let card;
+
+
+      if (
+        result.type === "character"
+      ) {
+
+        card =
+          createCharacterCard(
+            result,
+            index
+          );
+
+      }
+
+      else if (
+        result.type === "currency"
+      ) {
+
+        card =
+          createCurrencyCard(
+            result
+          );
+
+      }
+
+      else {
+
+        card =
+          createEmptyCard();
+
+      }
+
+
+      rail.appendChild(card);
+
+    }
+
+  );
+
+
+  updateBatchPosition();
+
+
+  rail.onscroll =
+    function () {
+
+      updateBatchPosition();
+
+    };
+
+}
+
+
+
+/*
+==================================================
+CHARACTER CARD
+==================================================
+*/
+
+function createCharacterCard(
+  character,
+  index
+) {
+
+  const card =
+    document.createElement(
+      "article"
+    );
+
+
+  card.className =
+    "roll-card";
+
+
+  const claimed =
+    player.claimedCharacters.includes(
+      character.id
+    );
+
+
+  const keys =
+    player.keys?.[
+      character.id
+    ]
+    ?? 0;
+
+
+  const chance =
+    getCharacterProbability();
+
+
+  card.innerHTML = `
+
+    <div class="card-top">
+
+      <div class="card-meta-row">
+
+        <div class="rank-sphere">
+          #${formatNumber(character.rank)}
+        </div>
+
+        <div class="card-value">
+
+          <span class="card-value-symbol">
+            ◈
+          </span>
+
+          ${formatNumber(character.value)}
+
+        </div>
+
+      </div>
+
+
+      <h2 class="card-name">
+        ${escapeHtml(character.name)}
+      </h2>
+
+
+      <p class="card-series">
+        ${escapeHtml(character.series)}
+      </p>
+
+    </div>
+
+
+    <div class="card-image-area">
+
+      ${
+        character.image
+
+        ?
+
+        `
+        <img
+          class="card-image"
+          src="${escapeAttribute(character.image)}"
+          alt="${escapeAttribute(character.name)}"
+          onerror="this.classList.add('hidden')"
+        >
+        `
+
+        :
+
+        ""
+      }
+
+    </div>
+
+
+    <div class="card-footer">
+
+
+      <div class="card-info-row">
+
+        <div class="card-keys">
+
+          <span>
+            ◆
+          </span>
+
+          ${formatNumber(keys)} keys
+
+        </div>
+
+
+        <div class="card-chance">
+
+          ${chance}% spawn
+
+        </div>
+
+      </div>
+
+
+      <button
+        class="claim-button"
+        onclick="claimCharacter('${escapeAttribute(character.id)}', ${index})"
+        ${claimed ? "disabled" : ""}
+      >
+
+        ${
+          claimed
+
+          ?
+
+          "OWNED"
+
+          :
+
+          (
+            player.claims.available > 0
+
+            ?
+
+            "CLAIM"
+
+            :
+
+            "NO CLAIMS"
+          )
+        }
+
+      </button>
+
+
+    </div>
+
+  `;
+
+
+  return card;
+
+}
+
+
+
+/*
+==================================================
+CURRENCY CARD
+==================================================
+*/
+
+function createCurrencyCard(
+  result
+) {
+
+  const card =
+    document.createElement(
+      "article"
+    );
+
+
+  card.className =
+    "roll-card currency-card";
+
+
+  const chance =
+    getCurrencyAmountProbability();
+
+
+  card.innerHTML = `
+
+    <div class="special-center">
+
+      <div class="currency-icon">
+        ◈
+      </div>
+
+
+      <h2 class="currency-amount">
+
+        +${formatNumber(result.amount)}
+
+      </h2>
+
+
+      <p class="special-label">
+        CURRENCY
+      </p>
+
+    </div>
+
+
+    <div class="card-footer">
+
+      <div class="card-info-row">
+
+        <div class="card-keys">
+          Added automatically
+        </div>
+
+        <div class="card-chance">
+          ${chance}% spawn
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  return card;
+
+}
+
+
+
+/*
+==================================================
+EMPTY CARD
+==================================================
+*/
+
+function createEmptyCard() {
+
+  const card =
+    document.createElement(
+      "article"
+    );
+
+
+  card.className =
+    "roll-card empty-result-card";
+
+
+  const chance =
+    getEmptyProbability();
+
+
+  card.innerHTML = `
+
+    <div class="empty-face">
+      :(
+    </div>
+
+
+    <div class="empty-text">
+      nothing this time
+    </div>
+
+
+    <div class="card-footer">
+
+      <div class="card-info-row">
+
+        <div></div>
+
+        <div class="card-chance">
+          ${chance}% spawn
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  return card;
+
+}
+
+
+
+/*
+==================================================
+PROBABILITY
+==================================================
+
+One character:
+1 database entry.
+
+One currency number:
+2 database entries.
+
+:( collectively:
+1000 database entries.
+==================================================
+*/
+
+function getCharacterProbability() {
+
+  return formatPercent(
+    1 / rollDatabase.length
+  );
+
+}
+
+
+function getCurrencyAmountProbability() {
+
+  return formatPercent(
+    2 / rollDatabase.length
+  );
+
+}
+
+
+function getEmptyProbability() {
+
+  return formatPercent(
+    1000 / rollDatabase.length
+  );
+
+}
+
+
+function formatPercent(
+  decimalChance
+) {
+
+  const percentage =
+    decimalChance * 100;
+
+
+  if (percentage >= 1) {
+
+    return percentage.toFixed(2);
+
+  }
+
+
+  if (percentage >= 0.1) {
+
+    return percentage.toFixed(3);
+
+  }
+
+
+  return percentage.toFixed(4);
+
+}
+
+
+
+/*
+==================================================
+CLAIM CHARACTER
+==================================================
+*/
+
+function claimCharacter(
+  characterId,
+  batchIndex
+) {
+
+  if (!player) {
+    return;
+  }
+
+
+  if (
+    player.claimedCharacters.includes(
+      characterId
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  if (
+    player.claims.available <= 0
+  ) {
+
+    alert(
+      "You have no claims available."
+    );
+
+    return;
+
+  }
+
+
+  player.claimedCharacters.push(
+    characterId
+  );
+
+
+  player.claims.available -= 1;
+
+
+  player.statistics.totalClaims += 1;
+
+
+  /*
+  Re-render so the button becomes OWNED.
+  */
+
+  renderRollBatch();
+
+  updateScreen();
+
+  saveGame();
+
+}
+
+
+
+/*
+==================================================
+CARD POSITION
+==================================================
+*/
+
+function updateBatchPosition() {
+
+  const rail =
+    document.getElementById(
+      "rollRail"
+    );
+
+
+  if (
+    currentBatch.length === 0
+  ) {
+
+    setText(
+      "cardPosition",
+      "No rolls yet"
+    );
+
+
+    setText(
+      "batchHint",
+      "Generate your available rolls"
+    );
+
+
+    return;
+
+  }
+
+
+  const cards =
+    rail.querySelectorAll(
+      ".roll-card"
+    );
+
+
+  if (
+    cards.length === 0
+  ) {
+
+    return;
+
+  }
+
+
+  const railCenter =
+    rail.scrollLeft
+
+    +
+
+    rail.clientWidth / 2;
+
+
+  let closestIndex = 0;
+
+  let closestDistance =
+    Infinity;
+
+
+  cards.forEach(
+
+    function (card, index) {
+
+      const cardCenter =
+
+        card.offsetLeft
+
+        +
+
+        card.offsetWidth / 2;
+
+
+      const distance =
+        Math.abs(
+          cardCenter - railCenter
+        );
+
+
+      if (
+        distance < closestDistance
+      ) {
+
+        closestDistance =
+          distance;
+
+        closestIndex =
+          index;
+
+      }
+
+    }
+
+  );
+
+
+  setText(
+
+    "cardPosition",
+
+    "ROLL "
+
+    +
+
+    (closestIndex + 1)
+
+    +
+
+    " / "
+
+    +
+
+    currentBatch.length
+
+  );
+
+
+  setText(
+
+    "batchHint",
+
+    currentBatch.length > 1
+
+    ?
+
+    "Swipe left or right"
+
+    :
+
+    "1 result"
+
+  );
+
+}
+
+
+
+/*
+==================================================
+CLEAR RAIL
+==================================================
+*/
+
+function clearRollRail() {
+
+  const rail =
+    document.getElementById(
+      "rollRail"
+    );
+
+
+  rail.innerHTML = `
+
+    <article class="welcome-card">
+
+      <div class="welcome-symbol">
+        ◈
+      </div>
+
+      <h2>
+        Ready to roll
+      </h2>
+
+      <p>
+        Your results will appear here as a swipeable card collection.
+      </p>
+
+    </article>
+
+  `;
+
+
+  setText(
+    "cardPosition",
+    "No rolls yet"
+  );
+
+
+  setText(
+    "batchHint",
+    "Generate your available rolls"
+  );
+
+}
+
+
+
+/*
+==================================================
+SAFE TEXT
+==================================================
+*/
+
+function escapeHtml(text) {
+
+  return String(text)
+
+    .replaceAll("&", "&amp;")
+
+    .replaceAll("<", "&lt;")
+
+    .replaceAll(">", "&gt;")
+
+    .replaceAll('"', "&quot;")
+
+    .replaceAll("'", "&#039;");
+
+}
+
+
+function escapeAttribute(text) {
+
+  return escapeHtml(text);
+
+}
+
+
+
+/*
+==================================================
+AUTOSAVE
+==================================================
+*/
 
 setInterval(
 
   function () {
 
-    if (
-      player !== null
-      &&
-      activeSaveSlot !== null
-    ) {
+    if (player) {
 
       saveGame();
 
@@ -1412,13 +1870,6 @@ setInterval(
 
 );
 
-
-
-/*
-=============================================
-SAVE WHEN PAGE CLOSES
-=============================================
-*/
 
 
 window.addEventListener(
@@ -1436,11 +1887,10 @@ window.addEventListener(
 
 
 /*
-=============================================
-PAGE STARTUP
-=============================================
+==================================================
+STARTUP
+==================================================
 */
-
 
 window.addEventListener(
 
@@ -1449,10 +1899,6 @@ window.addEventListener(
   function () {
 
     updateSaveSlotInfo();
-
-    updateScreen();
-
-    clearRollDisplay();
 
   }
 
