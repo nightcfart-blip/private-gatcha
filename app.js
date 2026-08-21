@@ -1,11 +1,3 @@
-/*
-==================================================
-PRIVATE GACHA
-APP.JS
-==================================================
-*/
-
-
 let player = null;
 
 let activeSaveSlot = null;
@@ -17,9 +9,9 @@ let selectedSaveSlot = null;
 
 
 /*
-==================================================
-SAVE KEY
-==================================================
+=========================================
+SAVE NAME
+=========================================
 */
 
 function getSaveName(slot) {
@@ -31,16 +23,9 @@ function getSaveName(slot) {
 
 
 /*
-==================================================
-OLD SAVE MIGRATION
-==================================================
-
-This adds newer properties to saves created
-before this version.
-
-That means you should NOT need to reset
-your existing saves.
-==================================================
+=========================================
+SAVE MIGRATION
+=========================================
 */
 
 function ensurePlayerShape() {
@@ -49,10 +34,6 @@ function ensurePlayerShape() {
     return;
   }
 
-
-  /*
-  Roll system.
-  */
 
   if (!player.rolls) {
 
@@ -66,30 +47,6 @@ function ensurePlayerShape() {
 
   }
 
-
-  if (
-    typeof player.rolls.available
-    !== "number"
-  ) {
-
-    player.rolls.available = 10;
-
-  }
-
-
-  if (
-    typeof player.rolls.maximum
-    !== "number"
-  ) {
-
-    player.rolls.maximum = 10;
-
-  }
-
-
-  /*
-  Claims.
-  */
 
   if (!player.claims) {
 
@@ -105,23 +62,40 @@ function ensurePlayerShape() {
 
 
   /*
-  Collection.
+  Stored claims are separate from normal
+  currently-available claims.
   */
 
-  if (
-    !Array.isArray(
-      player.claimedCharacters
-    )
-  ) {
+  if (!player.storedClaims) {
+
+    player.storedClaims = {
+
+      current: 0,
+
+      maximum: 0
+
+    };
+
+  }
+
+
+  if (!Array.isArray(
+    player.claimedCharacters
+  )) {
 
     player.claimedCharacters = [];
 
   }
 
 
-  /*
-  Keys.
-  */
+  if (!Array.isArray(
+    player.wishlist
+  )) {
+
+    player.wishlist = [];
+
+  }
+
 
   if (!player.keys) {
 
@@ -130,26 +104,60 @@ function ensurePlayerShape() {
   }
 
 
-  /*
-  Wishlist.
-  */
+  if (!player.statistics) {
 
-  if (
-    !Array.isArray(player.wishlist)
-  ) {
+    player.statistics = {};
 
-    player.wishlist = [];
+  }
+
+
+  if (!player.upgrades) {
+
+    player.upgrades = {};
 
   }
 
 
   /*
-  Statistics.
+  Profile defaults.
   */
 
-  if (!player.statistics) {
+  const upgradeDefaults = {
 
-    player.statistics = {};
+    wishlistSlots: 10,
+
+    starwishSlots: 0,
+
+    wishValueBonus: 0,
+
+    wishSpawnBonus: 0,
+
+    starwishSpawnBonus: 0,
+
+    reactionPowerCost: 100,
+
+    reactionRegeneration: 1,
+
+    tenthKeyBonus: 10000,
+
+    additionalKeyChance: 0
+
+  };
+
+
+  for (
+    const key in upgradeDefaults
+  ) {
+
+    if (
+      typeof player.upgrades[key]
+      !== "number"
+    ) {
+
+      player.upgrades[key] =
+        upgradeDefaults[key];
+
+    }
 
   }
 
@@ -168,13 +176,7 @@ function ensurePlayerShape() {
 
     totalReactions: 0,
 
-    totalKeysEarned: 0,
-
-    totalSpheresEarned: 0,
-
-    totalGambles: 0,
-
-    playTimeSeconds: 0
+    totalKeysEarned: 0
 
   };
 
@@ -200,34 +202,32 @@ function ensurePlayerShape() {
 
 
 /*
-==================================================
+=========================================
 LOAD SAVE
-==================================================
+=========================================
 */
 
 function loadSave(slot) {
 
-  const savedData =
+  const raw =
     localStorage.getItem(
       getSaveName(slot)
     );
 
 
-  if (savedData !== null) {
+  if (raw) {
 
     try {
 
       player =
-        JSON.parse(savedData);
+        JSON.parse(raw);
 
     }
 
-    catch (error) {
+    catch {
 
       alert(
-        "Save " +
-        slot +
-        " appears to be damaged."
+        "This save appears damaged."
       );
 
       return;
@@ -246,12 +246,8 @@ function loadSave(slot) {
 
   activeSaveSlot = slot;
 
-  currentBatch = [];
-
 
   ensurePlayerShape();
-
-  saveGame();
 
 
   document
@@ -264,37 +260,44 @@ function loadSave(slot) {
     .classList.remove("hidden");
 
 
-  showGamePage(
+  showPage(
+
     "rolls",
+
     document.querySelector(
-      '[data-screen="rolls"]'
+      '[data-page="rolls"]'
     )
+
   );
 
 
-  clearRollRail();
+  /*
+  AUTOMATICALLY CREATE THE DECK.
 
-  updateScreen();
+  No Roll button.
+  */
+
+  createAvailableRollDeck();
+
+
+  updateEverything();
+
+  saveGame();
 
 }
 
 
 
 /*
-==================================================
+=========================================
 SAVE
-==================================================
+=========================================
 */
 
 function saveGame(showMessage = false) {
 
-  if (
-    !player ||
-    activeSaveSlot === null
-  ) {
-
+  if (!player) {
     return;
-
   }
 
 
@@ -304,9 +307,7 @@ function saveGame(showMessage = false) {
 
   localStorage.setItem(
 
-    getSaveName(
-      activeSaveSlot
-    ),
+    getSaveName(activeSaveSlot),
 
     JSON.stringify(player)
 
@@ -327,7 +328,7 @@ function saveGame(showMessage = false) {
     if (status) {
 
       status.textContent =
-        "Saved successfully.";
+        "Collection saved.";
 
     }
 
@@ -338,9 +339,9 @@ function saveGame(showMessage = false) {
 
 
 /*
-==================================================
+=========================================
 SAVE SELECT
-==================================================
+=========================================
 */
 
 function showSaveScreen() {
@@ -365,9 +366,9 @@ function showSaveScreen() {
 
 
 /*
-==================================================
-SAVE SLOT INFORMATION
-==================================================
+=========================================
+SAVE CARDS
+=========================================
 */
 
 function updateSaveSlotInfo() {
@@ -396,25 +397,14 @@ function updateSaveSlotInfo() {
       );
 
 
-    const action =
-      document.getElementById(
-        "slot" + slot + "Action"
-      );
-
-
     if (!raw) {
 
       title.textContent =
-        "New Save";
+        "New Collection";
 
 
       info.textContent =
         "Empty";
-
-
-      action.textContent =
-        "START";
-
 
       continue;
 
@@ -427,67 +417,42 @@ function updateSaveSlotInfo() {
         JSON.parse(raw);
 
 
-      const currency =
-        save.currency?.kakera
-        ?? 0;
-
-
-      const rolls =
-        save.statistics?.totalRolls
-        ?? 0;
-
-
-      const claimed =
-        save.claimedCharacters?.length
-        ?? 0;
-
-
       title.textContent =
-        "Continue";
+        "Continue Collection";
 
 
       info.textContent =
 
-        formatNumber(currency)
+        formatNumber(
+          save.claimedCharacters?.length
+          ?? 0
+        )
 
         +
 
-        " ◈   ·   "
+        " claimed  ·  "
 
         +
 
-        formatNumber(rolls)
+        formatNumber(
+          save.currency?.kakera
+          ?? 0
+        )
 
         +
 
-        " rolls   ·   "
-
-        +
-
-        formatNumber(claimed)
-
-        +
-
-        " claimed";
-
-
-      action.textContent =
-        "CONTINUE";
+        " ◈";
 
     }
 
-    catch (error) {
+    catch {
 
       title.textContent =
         "Damaged Save";
 
 
       info.textContent =
-        "Unable to read save data";
-
-
-      action.textContent =
-        "OPEN";
+        "Unable to read";
 
     }
 
@@ -498,14 +463,15 @@ function updateSaveSlotInfo() {
 
 
 /*
-==================================================
-SAVE OPTIONS MODAL
-==================================================
+=========================================
+SAVE OPTIONS
+=========================================
 */
 
 function openSaveMenu(slot) {
 
-  selectedSaveSlot = slot;
+  selectedSaveSlot =
+    slot;
 
 
   document.getElementById(
@@ -528,26 +494,18 @@ function closeSaveMenu() {
     .classList.add("hidden");
 
 
-  selectedSaveSlot = null;
+  selectedSaveSlot =
+    null;
 
 }
 
 
 function overwriteSelectedSave() {
 
-  if (
-    selectedSaveSlot === null
-  ) {
-
-    return;
-
-  }
-
-
   if (!player) {
 
     alert(
-      "Load a save first before copying progress."
+      "Load a save first."
     );
 
     return;
@@ -555,31 +513,15 @@ function overwriteSelectedSave() {
   }
 
 
-  const confirmed =
+  const ok =
     confirm(
-
-      "Replace Save "
-
-      +
-
-      selectedSaveSlot
-
-      +
-
-      " with your current progress?"
-
+      "Overwrite this save?"
     );
 
 
-  if (!confirmed) {
+  if (!ok) {
     return;
   }
-
-
-  const copy =
-    JSON.parse(
-      JSON.stringify(player)
-    );
 
 
   localStorage.setItem(
@@ -588,7 +530,7 @@ function overwriteSelectedSave() {
       selectedSaveSlot
     ),
 
-    JSON.stringify(copy)
+    JSON.stringify(player)
 
   );
 
@@ -602,37 +544,22 @@ function overwriteSelectedSave() {
 
 function resetSelectedSave() {
 
-  if (
-    selectedSaveSlot === null
-  ) {
-
-    return;
-
-  }
-
-
   const slot =
     selectedSaveSlot;
 
 
-  const confirmed =
-    confirm(
-
-      "Permanently erase Save "
-
+  if (
+    !confirm(
+      "Permanently reset Save "
       +
-
       slot
-
       +
-
       "?"
+    )
+  ) {
 
-    );
-
-
-  if (!confirmed) {
     return;
+
   }
 
 
@@ -663,63 +590,53 @@ function resetSelectedSave() {
 
 
 /*
-==================================================
-PAGE NAVIGATION
-==================================================
+=========================================
+NAVIGATION
+=========================================
 */
 
-function showGamePage(
+function showPage(
   pageName,
   button
 ) {
 
-  const pages =
-    document.querySelectorAll(
-      ".game-page"
+  document
+    .querySelectorAll(".game-page")
+    .forEach(
+
+      function (page) {
+
+        page.classList.remove(
+          "active-page"
+        );
+
+      }
+
     );
 
 
-  pages.forEach(
-    function (page) {
-
-      page.classList.remove(
-        "active-page"
-      );
-
-    }
-  );
-
-
-  const target =
-    document.getElementById(
+  document
+    .getElementById(
       "page-" + pageName
-    );
-
-
-  if (target) {
-
-    target.classList.add(
+    )
+    .classList.add(
       "active-page"
     );
 
-  }
 
+  document
+    .querySelectorAll(".nav-button")
+    .forEach(
 
-  const navButtons =
-    document.querySelectorAll(
-      ".nav-item"
+      function (nav) {
+
+        nav.classList.remove(
+          "active"
+        );
+
+      }
+
     );
-
-
-  navButtons.forEach(
-    function (navButton) {
-
-      navButton.classList.remove(
-        "active"
-      );
-
-    }
-  );
 
 
   if (button) {
@@ -735,274 +652,28 @@ function showGamePage(
 
 
 /*
-==================================================
-UPDATE UI
-==================================================
+=========================================
+CREATE AVAILABLE ROLL DECK
+=========================================
 */
 
-function updateScreen() {
+function createAvailableRollDeck() {
 
   if (!player) {
     return;
-  }
-
-
-  ensurePlayerShape();
-
-
-  setText(
-    "currentSlot",
-    activeSaveSlot
-  );
-
-
-  setText(
-
-    "currencyDisplay",
-
-    formatNumber(
-      player.currency.kakera
-    )
-
-  );
-
-
-  setText(
-
-    "rollsAvailableDisplay",
-
-    formatNumber(
-      player.rolls.available
-    )
-
-  );
-
-
-  setText(
-
-    "claimsDisplay",
-
-    formatNumber(
-      player.claims.available
-    )
-
-  );
-
-
-  setText(
-
-    "towerDisplay",
-
-    player.tower?.currentFloor
-    ?? 1
-
-  );
-
-
-  setText(
-
-    "totalRollsDisplay",
-
-    formatNumber(
-      player.statistics.totalRolls
-    )
-
-  );
-
-
-  setText(
-
-    "seenDisplay",
-
-    formatNumber(
-      player.statistics
-        .totalCharactersSeen
-    )
-
-  );
-
-
-  setText(
-
-    "claimedDisplay",
-
-    formatNumber(
-      player.claimedCharacters.length
-    )
-
-  );
-
-
-  setText(
-
-    "collectionCount",
-
-    formatNumber(
-      player.claimedCharacters.length
-    )
-
-    +
-
-    " claimed"
-
-  );
-
-
-  setText(
-
-    "wishlistDisplay",
-
-    formatNumber(
-      player.wishlist.length
-    )
-
-  );
-
-
-  setText(
-
-    "currencyEarnedDisplay",
-
-    formatNumber(
-      player.statistics
-        .totalCurrencyEarned
-    )
-
-  );
-
-
-  setText(
-
-    "reactionPowerDisplay",
-
-    formatNumber(
-      player.reactionPower?.current
-      ?? 0
-    )
-
-    +
-
-    " / "
-
-    +
-
-    formatNumber(
-      player.reactionPower?.maximum
-      ?? 0
-    )
-
-  );
-
-
-  const batchButton =
-    document.getElementById(
-      "generateRollsButton"
-    );
-
-
-  if (batchButton) {
-
-    batchButton.disabled =
-      player.rolls.available <= 0;
-
-  }
-
-}
-
-
-
-/*
-==================================================
-SMALL UI HELPERS
-==================================================
-*/
-
-function setText(id, value) {
-
-  const element =
-    document.getElementById(id);
-
-
-  if (element) {
-
-    element.textContent =
-      value;
-
-  }
-
-}
-
-
-function formatNumber(value) {
-
-  return Number(
-    value ?? 0
-  ).toLocaleString();
-
-}
-
-
-
-/*
-==================================================
-GENERATE ROLL BATCH
-==================================================
-
-Instead of pressing Roll for every character,
-we use ALL currently available rolls.
-
-Example:
-
-10 rolls available
-→
-10 cards are created
-→
-rolls available becomes 0
-
-Later we'll add regeneration and upgrades.
-==================================================
-*/
-
-function generateRollBatch() {
-
-  if (!player) {
-
-    alert(
-      "Load a save first."
-    );
-
-    return;
-
   }
 
 
   if (
-    typeof rollDatabase === "undefined"
-    ||
-    !Array.isArray(rollDatabase)
+    !Array.isArray(
+      rollDatabase
+    )
     ||
     rollDatabase.length === 0
   ) {
 
     alert(
-      "The roll database is unavailable."
-    );
-
-    return;
-
-  }
-
-
-  const amount =
-    Math.floor(
-      player.rolls.available
-    );
-
-
-  if (amount <= 0) {
-
-    alert(
-      "You currently have no rolls available."
+      "The database did not load."
     );
 
     return;
@@ -1013,14 +684,39 @@ function generateRollBatch() {
   currentBatch = [];
 
 
+  const rollAmount =
+    Math.floor(
+      player.rolls.available
+    );
+
+
+  /*
+  No rolls.
+  */
+
+  if (
+    rollAmount <= 0
+  ) {
+
+    renderNoRolls();
+
+    return;
+
+  }
+
+
+  /*
+  Generate one result per available roll.
+  */
+
   for (
     let i = 0;
-    i < amount;
+    i < rollAmount;
     i++
   ) {
 
     const result =
-      equalRandomResult();
+      getRandomEntry();
 
 
     currentBatch.push(
@@ -1028,7 +724,8 @@ function generateRollBatch() {
     );
 
 
-    player.statistics.totalRolls += 1;
+    player.statistics
+      .totalRolls += 1;
 
 
     if (
@@ -1040,10 +737,6 @@ function generateRollBatch() {
 
     }
 
-
-    /*
-    Currency is awarded immediately.
-    */
 
     if (
       result.type === "currency"
@@ -1063,45 +756,27 @@ function generateRollBatch() {
 
 
   /*
-  All available rolls were consumed.
+  The generated deck used the rolls.
   */
 
   player.rolls.available = 0;
 
 
-  renderRollBatch();
-
-  updateScreen();
-
-  saveGame();
+  renderDeck();
 
 }
 
 
 
 /*
-==================================================
-EQUAL RANDOM RESULT
-==================================================
-
-EVERY ENTRY in rollDatabase is equally likely.
-
-Characters:
-1 entry each
-
-Currency amount:
-2 entries each
-
-:( result:
-1000 entries total
-
-This is exactly the probability rule you wanted.
-==================================================
+=========================================
+RANDOM DATABASE ENTRY
+=========================================
 */
 
-function equalRandomResult() {
+function getRandomEntry() {
 
-  const randomIndex =
+  const index =
     Math.floor(
 
       Math.random()
@@ -1113,21 +788,19 @@ function equalRandomResult() {
     );
 
 
-  return rollDatabase[
-    randomIndex
-  ];
+  return rollDatabase[index];
 
 }
 
 
 
 /*
-==================================================
-RENDER BATCH
-==================================================
+=========================================
+RENDER DECK
+=========================================
 */
 
-function renderRollBatch() {
+function renderDeck() {
 
   const rail =
     document.getElementById(
@@ -1138,9 +811,22 @@ function renderRollBatch() {
   rail.innerHTML = "";
 
 
+  document
+    .getElementById("noRollMessage")
+    .classList.add("hidden");
+
+
+  rail.classList.remove(
+    "hidden"
+  );
+
+
   currentBatch.forEach(
 
-    function (result, index) {
+    function (
+      result,
+      index
+    ) {
 
       let card;
 
@@ -1150,7 +836,7 @@ function renderRollBatch() {
       ) {
 
         card =
-          createCharacterCard(
+          buildCharacterCard(
             result,
             index
           );
@@ -1162,7 +848,7 @@ function renderRollBatch() {
       ) {
 
         card =
-          createCurrencyCard(
+          buildCurrencyCard(
             result
           );
 
@@ -1171,41 +857,103 @@ function renderRollBatch() {
       else {
 
         card =
-          createEmptyCard();
+          buildEmptyCard();
 
       }
 
 
-      rail.appendChild(card);
+      rail.appendChild(
+        card
+      );
 
     }
 
   );
 
 
-  updateBatchPosition();
-
-
   rail.onscroll =
-    function () {
+    updateCardPosition;
 
-      updateBatchPosition();
 
-    };
+  setTimeout(
+    updateCardPosition,
+    50
+  );
 
 }
 
 
 
 /*
-==================================================
-CHARACTER CARD
-==================================================
+=========================================
+NO ROLLS
+=========================================
 */
 
-function createCharacterCard(
+function renderNoRolls() {
+
+  document
+    .getElementById("rollRail")
+    .classList.add("hidden");
+
+
+  document
+    .getElementById("noRollMessage")
+    .classList.remove("hidden");
+
+
+  setText(
+    "cardPosition",
+    "EMPTY"
+  );
+
+}
+
+
+
+/*
+=========================================
+TEMPORARY REFILL
+=========================================
+
+This stays until we build real regeneration.
+
+It prevents you from getting trapped with
+zero rolls while we're still developing.
+=========================================
+*/
+
+function temporaryRefillRolls() {
+
+  if (!player) {
+    return;
+  }
+
+
+  player.rolls.available =
+    10;
+
+
+  saveGame();
+
+
+  createAvailableRollDeck();
+
+  updateEverything();
+
+}
+
+
+
+/*
+=========================================
+CHARACTER CARD
+=========================================
+*/
+
+function buildCharacterCard(
   character,
-  index
+  batchIndex
 ) {
 
   const card =
@@ -1218,59 +966,72 @@ function createCharacterCard(
     "roll-card";
 
 
-  const claimed =
+  const owned =
     player.claimedCharacters.includes(
       character.id
     );
 
 
   const keys =
-    player.keys?.[
+    player.keys[
       character.id
     ]
     ?? 0;
 
 
-  const chance =
-    getCharacterProbability();
-
-
   card.innerHTML = `
+
+    <div class="card-decoration">
+      ✦ ── ◇ ── ✦
+    </div>
+
 
     <div class="card-top">
 
-      <div class="card-meta-row">
 
-        <div class="rank-sphere">
+      <div class="card-meta">
+
+
+        <div class="rank-orb">
+
           #${formatNumber(character.rank)}
+
         </div>
+
 
         <div class="card-value">
 
-          <span class="card-value-symbol">
+          <i>
             ◈
-          </span>
+          </i>
 
           ${formatNumber(character.value)}
 
         </div>
 
+
       </div>
 
 
       <h2 class="card-name">
+
         ${escapeHtml(character.name)}
+
       </h2>
 
 
       <p class="card-series">
+
         ${escapeHtml(character.series)}
+
       </p>
+
 
     </div>
 
 
-    <div class="card-image-area">
+
+    <div class="card-art">
 
       ${
         character.image
@@ -1279,10 +1040,9 @@ function createCharacterCard(
 
         `
         <img
-          class="card-image"
-          src="${escapeAttribute(character.image)}"
-          alt="${escapeAttribute(character.name)}"
-          onerror="this.classList.add('hidden')"
+          src="${escapeHtml(character.image)}"
+          alt="${escapeHtml(character.name)}"
+          onerror="this.style.display='none'"
         >
         `
 
@@ -1294,39 +1054,44 @@ function createCharacterCard(
     </div>
 
 
+
     <div class="card-footer">
 
 
-      <div class="card-info-row">
-
-        <div class="card-keys">
-
-          <span>
-            ◆
-          </span>
-
-          ${formatNumber(keys)} keys
-
-        </div>
+      <div class="card-info">
 
 
-        <div class="card-chance">
+        <span class="key-value">
 
-          ${chance}% spawn
+          ◆ ${formatNumber(keys)} keys
 
-        </div>
+        </span>
+
+
+        <span>
+
+          ${getCharacterProbability()}%
+
+        </span>
+
 
       </div>
 
 
       <button
         class="claim-button"
-        onclick="claimCharacter('${escapeAttribute(character.id)}', ${index})"
-        ${claimed ? "disabled" : ""}
+
+        onclick="
+          claimCharacter(
+            '${escapeHtml(character.id)}'
+          )
+        "
+
+        ${owned ? "disabled" : ""}
       >
 
         ${
-          claimed
+          owned
 
           ?
 
@@ -1362,12 +1127,12 @@ function createCharacterCard(
 
 
 /*
-==================================================
+=========================================
 CURRENCY CARD
-==================================================
+=========================================
 */
 
-function createCurrencyCard(
+function buildCurrencyCard(
   result
 ) {
 
@@ -1381,44 +1146,41 @@ function createCurrencyCard(
     "roll-card currency-card";
 
 
-  const chance =
-    getCurrencyAmountProbability();
-
-
   card.innerHTML = `
 
-    <div class="special-center">
-
-      <div class="currency-icon">
-        ◈
-      </div>
-
-
-      <h2 class="currency-amount">
-
-        +${formatNumber(result.amount)}
-
-      </h2>
-
-
-      <p class="special-label">
-        CURRENCY
-      </p>
-
+    <div class="card-decoration">
+      ✦ ── ◇ ── ✦
     </div>
+
+
+    <div class="currency-result-symbol">
+      ◈
+    </div>
+
+
+    <h2 class="currency-result-amount">
+
+      +${formatNumber(result.amount)}
+
+    </h2>
+
+
+    <p class="currency-result-label">
+      CURRENCY
+    </p>
 
 
     <div class="card-footer">
 
-      <div class="card-info-row">
+      <div class="card-info">
 
-        <div class="card-keys">
-          Added automatically
-        </div>
+        <span>
+          added automatically
+        </span>
 
-        <div class="card-chance">
-          ${chance}% spawn
-        </div>
+        <span>
+          ${getCurrencyProbability()}%
+        </span>
 
       </div>
 
@@ -1434,12 +1196,12 @@ function createCurrencyCard(
 
 
 /*
-==================================================
+=========================================
 EMPTY CARD
-==================================================
+=========================================
 */
 
-function createEmptyCard() {
+function buildEmptyCard() {
 
   const card =
     document.createElement(
@@ -1448,34 +1210,35 @@ function createEmptyCard() {
 
 
   card.className =
-    "roll-card empty-result-card";
-
-
-  const chance =
-    getEmptyProbability();
+    "roll-card empty-card";
 
 
   card.innerHTML = `
+
+    <div class="card-decoration">
+      ✦ ── ◇ ── ✦
+    </div>
+
 
     <div class="empty-face">
       :(
     </div>
 
 
-    <div class="empty-text">
-      nothing this time
-    </div>
+    <p class="empty-caption">
+      nothing
+    </p>
 
 
     <div class="card-footer">
 
-      <div class="card-info-row">
+      <div class="card-info">
 
-        <div></div>
+        <span></span>
 
-        <div class="card-chance">
-          ${chance}% spawn
-        </div>
+        <span>
+          ${getEmptyProbability()}%
+        </span>
 
       </div>
 
@@ -1491,89 +1254,25 @@ function createEmptyCard() {
 
 
 /*
-==================================================
-PROBABILITY
-==================================================
-
-One character:
-1 database entry.
-
-One currency number:
-2 database entries.
-
-:( collectively:
-1000 database entries.
-==================================================
-*/
-
-function getCharacterProbability() {
-
-  return formatPercent(
-    1 / rollDatabase.length
-  );
-
-}
-
-
-function getCurrencyAmountProbability() {
-
-  return formatPercent(
-    2 / rollDatabase.length
-  );
-
-}
-
-
-function getEmptyProbability() {
-
-  return formatPercent(
-    1000 / rollDatabase.length
-  );
-
-}
-
-
-function formatPercent(
-  decimalChance
-) {
-
-  const percentage =
-    decimalChance * 100;
-
-
-  if (percentage >= 1) {
-
-    return percentage.toFixed(2);
-
-  }
-
-
-  if (percentage >= 0.1) {
-
-    return percentage.toFixed(3);
-
-  }
-
-
-  return percentage.toFixed(4);
-
-}
-
-
-
-/*
-==================================================
-CLAIM CHARACTER
-==================================================
+=========================================
+CLAIM
+=========================================
 */
 
 function claimCharacter(
-  characterId,
-  batchIndex
+  characterId
 ) {
 
-  if (!player) {
+  if (
+    player.claims.available <= 0
+  ) {
+
+    alert(
+      "No claims available."
+    );
+
     return;
+
   }
 
 
@@ -1588,19 +1287,6 @@ function claimCharacter(
   }
 
 
-  if (
-    player.claims.available <= 0
-  ) {
-
-    alert(
-      "You have no claims available."
-    );
-
-    return;
-
-  }
-
-
   player.claimedCharacters.push(
     characterId
   );
@@ -1609,16 +1295,13 @@ function claimCharacter(
   player.claims.available -= 1;
 
 
-  player.statistics.totalClaims += 1;
+  player.statistics
+    .totalClaims += 1;
 
 
-  /*
-  Re-render so the button becomes OWNED.
-  */
+  renderDeck();
 
-  renderRollBatch();
-
-  updateScreen();
+  updateEverything();
 
   saveGame();
 
@@ -1627,38 +1310,71 @@ function claimCharacter(
 
 
 /*
-==================================================
-CARD POSITION
-==================================================
+=========================================
+PROBABILITIES
+=========================================
 */
 
-function updateBatchPosition() {
+function getCharacterProbability() {
+
+  return percent(
+    1 / rollDatabase.length
+  );
+
+}
+
+
+function getCurrencyProbability() {
+
+  return percent(
+    2 / rollDatabase.length
+  );
+
+}
+
+
+function getEmptyProbability() {
+
+  return percent(
+    1000 / rollDatabase.length
+  );
+
+}
+
+
+function percent(decimal) {
+
+  const value =
+    decimal * 100;
+
+
+  if (
+    value >= 1
+  ) {
+
+    return value.toFixed(2);
+
+  }
+
+
+  return value.toFixed(4);
+
+}
+
+
+
+/*
+=========================================
+CARD POSITION
+=========================================
+*/
+
+function updateCardPosition() {
 
   const rail =
     document.getElementById(
       "rollRail"
     );
-
-
-  if (
-    currentBatch.length === 0
-  ) {
-
-    setText(
-      "cardPosition",
-      "No rolls yet"
-    );
-
-
-    setText(
-      "batchHint",
-      "Generate your available rolls"
-    );
-
-
-    return;
-
-  }
 
 
   const cards =
@@ -1667,16 +1383,12 @@ function updateBatchPosition() {
     );
 
 
-  if (
-    cards.length === 0
-  ) {
-
+  if (!cards.length) {
     return;
-
   }
 
 
-  const railCenter =
+  const center =
     rail.scrollLeft
 
     +
@@ -1684,15 +1396,20 @@ function updateBatchPosition() {
     rail.clientWidth / 2;
 
 
-  let closestIndex = 0;
+  let closest =
+    0;
 
-  let closestDistance =
+
+  let smallestDistance =
     Infinity;
 
 
   cards.forEach(
 
-    function (card, index) {
+    function (
+      card,
+      index
+    ) {
 
       const cardCenter =
 
@@ -1705,18 +1422,20 @@ function updateBatchPosition() {
 
       const distance =
         Math.abs(
-          cardCenter - railCenter
+          center - cardCenter
         );
 
 
       if (
-        distance < closestDistance
+        distance
+        <
+        smallestDistance
       ) {
 
-        closestDistance =
+        smallestDistance =
           distance;
 
-        closestIndex =
+        closest =
           index;
 
       }
@@ -1730,11 +1449,7 @@ function updateBatchPosition() {
 
     "cardPosition",
 
-    "ROLL "
-
-    +
-
-    (closestIndex + 1)
+    (closest + 1)
 
     +
 
@@ -1742,24 +1457,7 @@ function updateBatchPosition() {
 
     +
 
-    currentBatch.length
-
-  );
-
-
-  setText(
-
-    "batchHint",
-
-    currentBatch.length > 1
-
-    ?
-
-    "Swipe left or right"
-
-    :
-
-    "1 result"
+    cards.length
 
   );
 
@@ -1768,49 +1466,249 @@ function updateBatchPosition() {
 
 
 /*
-==================================================
-CLEAR RAIL
-==================================================
+=========================================
+PROFILE
+=========================================
 */
 
-function clearRollRail() {
+function updateProfile() {
 
-  const rail =
-    document.getElementById(
-      "rollRail"
+  if (!player) {
+    return;
+  }
+
+
+  const totalKeys =
+    Object.values(
+      player.keys
+    ).reduce(
+
+      function (
+        total,
+        value
+      ) {
+
+        return (
+          total
+          +
+          Number(value || 0)
+        );
+
+      },
+
+      0
+
     );
 
 
-  rail.innerHTML = `
-
-    <article class="welcome-card">
-
-      <div class="welcome-symbol">
-        ◈
-      </div>
-
-      <h2>
-        Ready to roll
-      </h2>
-
-      <p>
-        Your results will appear here as a swipeable card collection.
-      </p>
-
-    </article>
-
-  `;
-
-
   setText(
-    "cardPosition",
-    "No rolls yet"
+    "profileRolls",
+    player.rolls.available
   );
 
 
   setText(
-    "batchHint",
-    "Generate your available rolls"
+    "profileClaims",
+    player.claims.available
+  );
+
+
+  setText(
+
+    "profileStoredClaims",
+
+    player.storedClaims.current
+
+    +
+
+    " / "
+
+    +
+
+    player.storedClaims.maximum
+
+  );
+
+
+  setText(
+
+    "profileWishlistSlots",
+
+    player.upgrades.wishlistSlots
+
+  );
+
+
+  setText(
+
+    "profileWishBonusValue",
+
+    formatNumber(
+      player.upgrades
+        .wishValueBonus
+    )
+
+  );
+
+
+  setText(
+
+    "profileStarwishSlots",
+
+    player.upgrades.starwishSlots
+
+  );
+
+
+  setText(
+
+    "profileWishSpawn",
+
+    player.upgrades
+      .wishSpawnBonus
+
+    +
+
+    "%"
+
+  );
+
+
+  setText(
+
+    "profileStarwishSpawn",
+
+    player.upgrades
+      .starwishSpawnBonus
+
+    +
+
+    "%"
+
+  );
+
+
+  /*
+  Roll pool size.
+
+  This includes:
+
+  characters
+  currency entries
+  :( entries
+  */
+
+  setText(
+
+    "profileRollpool",
+
+    formatNumber(
+      rollDatabase.length
+    )
+
+  );
+
+
+  setText(
+
+    "profileCurrency",
+
+    formatNumber(
+      player.currency.kakera
+    )
+
+  );
+
+
+  setText(
+
+    "profileReactionPower",
+
+    (
+      player.reactionPower
+        ?.current
+      ?? 100
+    )
+
+    +
+
+    "%"
+
+  );
+
+
+  setText(
+
+    "profileReactionCost",
+
+    player.upgrades
+      .reactionPowerCost
+
+    +
+
+    "%"
+
+  );
+
+
+  setText(
+
+    "profilePowerRegen",
+
+    player.upgrades
+      .reactionRegeneration
+
+    +
+
+    "%"
+
+  );
+
+
+  setText(
+
+    "profileTenthKeyBonus",
+
+    formatNumber(
+      player.upgrades
+        .tenthKeyBonus
+    )
+
+    +
+
+    " ◈"
+
+  );
+
+
+  setText(
+    "profileWhiteAmount",
+    "3–4"
+  );
+
+
+  setText(
+
+    "profileTotalKeys",
+
+    formatNumber(
+      totalKeys
+    )
+
+  );
+
+
+  setText(
+
+    "profileAdditionalKeyChance",
+
+    player.upgrades
+      .additionalKeyChance
+
+    +
+
+    "%"
+
   );
 
 }
@@ -1818,10 +1716,113 @@ function clearRollRail() {
 
 
 /*
-==================================================
-SAFE TEXT
-==================================================
+=========================================
+MAIN UI UPDATE
+=========================================
 */
+
+function updateEverything() {
+
+  if (!player) {
+    return;
+  }
+
+
+  ensurePlayerShape();
+
+
+  setText(
+
+    "currentSlot",
+
+    activeSaveSlot
+
+  );
+
+
+  setText(
+
+    "rollsAvailableDisplay",
+
+    formatNumber(
+      player.rolls.available
+    )
+
+  );
+
+
+  setText(
+
+    "claimsDisplay",
+
+    formatNumber(
+      player.claims.available
+    )
+
+  );
+
+
+  setText(
+
+    "currencyDisplay",
+
+    formatNumber(
+      player.currency.kakera
+    )
+
+  );
+
+
+  setText(
+
+    "towerDisplay",
+
+    player.tower
+      ?.currentFloor
+    ?? 1
+
+  );
+
+
+  updateProfile();
+
+}
+
+
+
+/*
+=========================================
+HELPERS
+=========================================
+*/
+
+function setText(
+  id,
+  text
+) {
+
+  const element =
+    document.getElementById(id);
+
+
+  if (element) {
+
+    element.textContent =
+      text;
+
+  }
+
+}
+
+
+function formatNumber(number) {
+
+  return Number(
+    number ?? 0
+  ).toLocaleString();
+
+}
+
 
 function escapeHtml(text) {
 
@@ -1840,18 +1841,11 @@ function escapeHtml(text) {
 }
 
 
-function escapeAttribute(text) {
-
-  return escapeHtml(text);
-
-}
-
-
 
 /*
-==================================================
+=========================================
 AUTOSAVE
-==================================================
+=========================================
 */
 
 setInterval(
@@ -1871,7 +1865,6 @@ setInterval(
 );
 
 
-
 window.addEventListener(
 
   "beforeunload",
@@ -1887,9 +1880,9 @@ window.addEventListener(
 
 
 /*
-==================================================
-STARTUP
-==================================================
+=========================================
+START
+=========================================
 */
 
 window.addEventListener(
