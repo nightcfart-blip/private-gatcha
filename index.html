@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
 
@@ -8,20 +9,52 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>My Private Gacha</title>
+  <title>Private Gacha</title>
 
   <link rel="stylesheet" href="style.css">
 </head>
 
+
 <body>
 
-  <main class="game">
+  <div class="app">
 
-    <h1>My Private Gacha</h1>
+    <!-- ========================= -->
+    <!-- HEADER -->
+    <!-- ========================= -->
 
-    <p id="saveStatus">
-      No save loaded
-    </p>
+    <header class="top-bar">
+
+      <div>
+        <p class="eyebrow">
+          PRIVATE GACHA
+        </p>
+
+        <h1>
+          Character Collection
+        </h1>
+      </div>
+
+      <div class="save-badge">
+        Save
+        <span id="currentSlot">
+          —
+        </span>
+      </div>
+
+    </header>
+
+
+    <!-- ========================= -->
+    <!-- SAVE STATUS -->
+    <!-- ========================= -->
+
+    <div
+      id="saveStatus"
+      class="status-message"
+    >
+      Choose a save file to begin.
+    </div>
 
 
     <!-- ========================= -->
@@ -30,91 +63,257 @@
 
     <section class="panel">
 
-      <h2>Save Files</h2>
+      <div class="section-heading">
 
-      <div class="save-slots">
+        <div>
+          <p class="eyebrow">
+            PLAYER DATA
+          </p>
 
-        <!-- SAVE SLOT 1 -->
+          <h2>
+            Save Files
+          </h2>
+        </div>
 
-        <div class="save-slot">
+      </div>
 
-          <h3>Save 1</h3>
 
-          <p id="slot1Info">
+      <div class="save-grid">
+
+
+        <!-- SAVE 1 -->
+
+        <article class="save-card">
+
+          <div class="save-number">
+            01
+          </div>
+
+          <h3>
+            Save File 1
+          </h3>
+
+          <p
+            id="slot1Info"
+            class="save-info"
+          >
             Empty
           </p>
 
-          <button onclick="loadSave(1)">
-            Load
-          </button>
+          <div class="button-row">
 
-          <button onclick="overwriteSave(1)">
-            Overwrite
-          </button>
+            <button
+              class="primary-button"
+              onclick="loadSave(1)"
+            >
+              Load
+            </button>
 
-          <button
-            class="danger"
-            onclick="resetSave(1)"
+            <button
+              class="secondary-button"
+              onclick="overwriteSave(1)"
+            >
+              Copy Here
+            </button>
+
+            <button
+              class="danger-button"
+              onclick="resetSave(1)"
+            >
+              Reset
+            </button>
+
+          </div>
+
+        </article>
+
+
+        <!-- SAVE 2 -->
+
+        <article class="save-card">
+
+          <div class="save-number">
+            02
+          </div>
+
+          <h3>
+            Save File 2
+          </h3>
+
+          <p
+            id="slot2Info"
+            class="save-info"
           >
-            Reset
-          </button>
+            Empty
+          </p>
 
+          <div class="button-row">
+
+            <button
+              class="primary-button"
+              onclick="loadSave(2)"
+            >
+              Load
+            </button>
+
+            <button
+              class="secondary-button"
+              onclick="overwriteSave(2)"
+            >
+              Copy Here
+            </button>
+
+            <button
+              class="danger-button"
+              onclick="resetSave(2)"
+            >
+              Reset
+            </button>
+
+          </div>
+
+        </article>
+
+
+        <!-- SAVE 3 -->
+
+        <article class="save-card">
+
+          <div class="save-number">
+            03
+          </div>
+
+          <h3>
+            Save File 3
+          </h3>
+
+          <p
+            id="slot3Info"
+            class="save-info"
+          >
+            Empty
+          </p>
+
+          <div class="button-row">
+
+            <button
+              class="primary-button"
+              onclick="loadSave(3)"
+            >
+              Load
+            </button>
+
+            <button
+              class="secondary-button"
+              onclick="overwriteSave(3)"
+            >
+              Copy Here
+            </button>
+
+            <button
+              class="danger-button"
+              onclick="resetSave(3)"
+            >
+              Reset
+            </button>
+
+          </div>
+
+        </article>
+
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ========================= -->
+    <!-- PLAYER SUMMARY -->
+    <!-- ========================= -->
+
+    <section class="panel">
+
+      <div class="section-heading">
+
+        <div>
+          <p class="eyebrow">
+            CURRENT PROFILE
+          </p>
+
+          <h2>
+            Player
+          </h2>
+        </div>
+
+      </div>
+
+
+      <div class="stat-grid">
+
+        <div class="stat-card">
+          <span class="stat-label">
+            Currency
+          </span>
+
+          <strong id="currencyDisplay">
+            0
+          </strong>
         </div>
 
 
-        <!-- SAVE SLOT 2 -->
+        <div class="stat-card">
+          <span class="stat-label">
+            Claimed
+          </span>
 
-        <div class="save-slot">
-
-          <h3>Save 2</h3>
-
-          <p id="slot2Info">
-            Empty
-          </p>
-
-          <button onclick="loadSave(2)">
-            Load
-          </button>
-
-          <button onclick="overwriteSave(2)">
-            Overwrite
-          </button>
-
-          <button
-            class="danger"
-            onclick="resetSave(2)"
-          >
-            Reset
-          </button>
-
+          <strong id="claimedDisplay">
+            0
+          </strong>
         </div>
 
 
-        <!-- SAVE SLOT 3 -->
+        <div class="stat-card">
+          <span class="stat-label">
+            Wishlist
+          </span>
 
-        <div class="save-slot">
+          <strong id="wishlistDisplay">
+            0
+          </strong>
+        </div>
 
-          <h3>Save 3</h3>
 
-          <p id="slot3Info">
-            Empty
-          </p>
+        <div class="stat-card">
+          <span class="stat-label">
+            Tower
+          </span>
 
-          <button onclick="loadSave(3)">
-            Load
-          </button>
+          <strong id="towerDisplay">
+            —
+          </strong>
+        </div>
 
-          <button onclick="overwriteSave(3)">
-            Overwrite
-          </button>
 
-          <button
-            class="danger"
-            onclick="resetSave(3)"
-          >
-            Reset
-          </button>
+        <div class="stat-card">
+          <span class="stat-label">
+            Reaction Power
+          </span>
 
+          <strong id="reactionPowerDisplay">
+            0
+          </strong>
+        </div>
+
+
+        <div class="stat-card">
+          <span class="stat-label">
+            Rolls
+          </span>
+
+          <strong id="rollsDisplay">
+            0
+          </strong>
         </div>
 
       </div>
@@ -122,106 +321,249 @@
     </section>
 
 
+
     <!-- ========================= -->
-    <!-- CURRENT PLAYER -->
+    <!-- CHARACTER ROLL -->
     <!-- ========================= -->
 
-    <section class="panel">
+    <section class="panel roll-panel">
 
-      <h2>Current Player</h2>
+      <div class="section-heading">
 
-      <p>
-        Save Slot:
-        <strong id="currentSlot">
-          None
-        </strong>
-      </p>
+        <div>
+          <p class="eyebrow">
+            GACHA
+          </p>
 
-      <p>
-        Currency:
-        <strong id="currencyDisplay">
-          0
-        </strong>
-      </p>
+          <h2>
+            Current Roll
+          </h2>
+        </div>
 
-      <p>
-        Characters Claimed:
-        <strong id="claimedDisplay">
-          0
-        </strong>
-      </p>
+      </div>
 
-      <p>
-        Wishlist:
-        <strong id="wishlistDisplay">
-          0
-        </strong>
-      </p>
 
-      <p>
-        Tower Floor:
-        <strong id="towerDisplay">
-          1
-        </strong>
-      </p>
 
-      <p>
-        Reaction Power:
-        <strong id="reactionPowerDisplay">
-          0
-        </strong>
-      </p>
+      <article
+        id="rollCard"
+        class="character-card empty-roll"
+      >
 
-      <p>
-        Total Rolls:
-        <strong id="rollsDisplay">
-          0
-        </strong>
-      </p>
+
+        <!-- IMAGE -->
+
+        <div class="character-image-area">
+
+          <img
+            id="characterImage"
+            class="character-image hidden"
+            src=""
+            alt=""
+          >
+
+          <div
+            id="imagePlaceholder"
+            class="image-placeholder"
+          >
+            <span class="placeholder-symbol">
+              ✦
+            </span>
+
+            <span>
+              Character image
+            </span>
+          </div>
+
+        </div>
+
+
+
+        <!-- CHARACTER INFORMATION -->
+
+        <div class="character-content">
+
+          <div class="character-title-area">
+
+            <div>
+
+              <p
+                id="characterSeries"
+                class="character-series"
+              >
+                No series
+              </p>
+
+              <h2
+                id="characterName"
+                class="character-name"
+              >
+                No roll yet
+              </h2>
+
+            </div>
+
+
+            <div
+              id="claimBadge"
+              class="claim-badge unclaimed"
+            >
+              UNCLAIMED
+            </div>
+
+          </div>
+
+
+
+          <div class="character-details">
+
+
+            <div class="detail">
+
+              <span>
+                Rank
+              </span>
+
+              <strong id="characterRank">
+                —
+              </strong>
+
+            </div>
+
+
+            <div class="detail">
+
+              <span>
+                Value
+              </span>
+
+              <strong id="characterValue">
+                —
+              </strong>
+
+            </div>
+
+
+            <div class="detail">
+
+              <span>
+                Spawn Weight
+              </span>
+
+              <strong id="characterWeight">
+                —
+              </strong>
+
+            </div>
+
+
+            <div class="detail">
+
+              <span>
+                Keys
+              </span>
+
+              <strong id="characterKeys">
+                0
+              </strong>
+
+            </div>
+
+
+          </div>
+
+
+          <div class="roll-actions">
+
+            <button
+              id="rollButton"
+              class="big-roll-button"
+              onclick="rollCharacter()"
+            >
+              ROLL
+            </button>
+
+          </div>
+
+
+          <p
+            id="rollNotice"
+            class="roll-notice"
+          >
+            Load a save file before rolling.
+          </p>
+
+        </div>
+
+      </article>
 
     </section>
 
 
+
     <!-- ========================= -->
-    <!-- TESTING -->
+    <!-- STEP 2 TEST / SAVE TOOLS -->
     <!-- ========================= -->
 
     <section class="panel">
 
-      <h2>Save Testing</h2>
+      <div class="section-heading">
 
-      <p>
-        These buttons are temporary.
-        They let us make sure saving works.
+        <div>
+          <p class="eyebrow">
+            DEVELOPMENT
+          </p>
+
+          <h2>
+            Save Tools
+          </h2>
+        </div>
+
+      </div>
+
+
+      <p class="small-text">
+        These are still here for testing.
+        We can remove them later.
       </p>
 
-      <button onclick="testAddCurrency()">
-        +100 Currency
-      </button>
 
-      <button onclick="testAddRoll()">
-        +1 Roll
-      </button>
+      <div class="button-row">
 
-      <button onclick="saveGame()">
-        Save Now
-      </button>
+        <button
+          class="secondary-button"
+          onclick="testAddCurrency()"
+        >
+          +100 Currency
+        </button>
+
+        <button
+          class="secondary-button"
+          onclick="saveGame(true)"
+        >
+          Save Now
+        </button>
+
+      </div>
 
     </section>
 
-  </main>
+
+  </div>
 
 
   <!--
-    data.js loads FIRST because it contains
-    the default player structure.
+  data.js MUST load first.
 
-    app.js loads SECOND because it uses
-    information from data.js.
+  It will contain:
+  - player defaults
+  - characters
+  - currency rolls
+  - empty :( rolls
   -->
 
   <script src="data.js"></script>
   <script src="app.js"></script>
 
 </body>
+
 </html>
