@@ -12,7 +12,7 @@
 
   <meta
     name="theme-color"
-    content="#17141f"
+    content="#151219"
   >
 
   <meta
@@ -29,7 +29,7 @@
 
   <link
     rel="stylesheet"
-    href="style.css?v=60"
+    href="style.css?v=70"
   >
 
 </head>
@@ -38,9 +38,9 @@
 <body>
 
 
-<!-- ================================================== -->
+<!-- ================================================= -->
 <!-- SAVE SELECT -->
-<!-- ================================================== -->
+<!-- ================================================= -->
 
 <section
   id="saveScreen"
@@ -186,17 +186,15 @@
 
 
 
-<!-- ================================================== -->
+<!-- ================================================= -->
 <!-- GAME -->
-<!-- ================================================== -->
+<!-- ================================================= -->
 
 <section
   id="gameScreen"
   class="game-screen hidden"
 >
 
-
-<!-- HEADER -->
 
 <header class="app-header">
 
@@ -229,8 +227,6 @@
 </header>
 
 
-
-<!-- NAV -->
 
 <nav class="main-nav">
 
@@ -326,9 +322,9 @@
 
 
 
-<!-- ================================================== -->
+<!-- ================================================= -->
 <!-- ROLLS -->
-<!-- ================================================== -->
+<!-- ================================================= -->
 
 <main
   id="page-rolls"
@@ -368,7 +364,7 @@
     <div class="round-resource">
 
       <span>
-        CLAIMS
+        CLAIM
       </span>
 
       <strong id="claimsDisplay">
@@ -425,7 +421,7 @@
       </span>
 
       <small>
-        swipe
+        drag or swipe
       </small>
 
     </div>
@@ -435,18 +431,42 @@
 
 
   <div
-    id="roundRewardNotice"
-    class="round-reward-notice hidden"
+    id="roundNotice"
+    class="round-notice hidden"
   >
   </div>
 
 
 
-  <section
-    id="rollRail"
-    class="roll-rail"
-  >
-  </section>
+  <div class="deck-shell">
+
+
+    <button
+      class="deck-arrow left"
+      onclick="moveCard(-1)"
+      aria-label="Previous card"
+    >
+      ‹
+    </button>
+
+
+    <section
+      id="rollRail"
+      class="roll-rail"
+    >
+    </section>
+
+
+    <button
+      class="deck-arrow right"
+      onclick="moveCard(1)"
+      aria-label="Next card"
+    >
+      ›
+    </button>
+
+
+  </div>
 
 
 
@@ -457,7 +477,7 @@
     </div>
 
     <p id="nextClaimNotice">
-      Next claim on Round 5
+      Next claim regeneration on Round 5
     </p>
 
     <button
@@ -474,9 +494,9 @@
 
 
 
-<!-- ================================================== -->
+<!-- ================================================= -->
 <!-- PROFILE -->
-<!-- ================================================== -->
+<!-- ================================================= -->
 
 <main
   id="page-profile"
@@ -504,7 +524,7 @@
     </div>
 
     <div class="profile-row">
-      <span>Rolls per Round</span>
+      <span>Rolls</span>
       <strong id="profileRolls">6</strong>
     </div>
 
@@ -525,7 +545,7 @@
 
     <div class="profile-row">
       <span>◈ Bonus when Wished</span>
-      <strong id="profileWishBonusValue">0</strong>
+      <strong id="profileWishBonus">0</strong>
     </div>
 
     <div class="profile-row">
@@ -582,12 +602,12 @@
 
       <div class="profile-row">
         <span>◈ Power Regeneration per Round</span>
-        <strong id="profilePowerRegen">1%</strong>
+        <strong id="profileReactionRegen">1%</strong>
       </div>
 
       <div class="profile-row">
         <span>◈ 10th Key Bonus</span>
-        <strong id="profileTenthKeyBonus">10,000 ◈</strong>
+        <strong>10,000 ◈</strong>
       </div>
 
       <div class="profile-row">
@@ -603,9 +623,10 @@
 
   <section class="reaction-section">
 
-    <p class="small-section-label">
+    <p class="section-caption">
       ◈ RARITY & VALUE
     </p>
+
 
     <div class="reaction-list">
 
@@ -674,17 +695,16 @@
   </section>
 
 
-
   <section class="profile-panel">
 
     <div class="profile-row">
       <span>Total Keys</span>
-      <strong id="profileTotalKeys">0</strong>
+      <strong id="profileKeys">0</strong>
     </div>
 
     <div class="profile-row">
       <span>Chance Additional Key</span>
-      <strong id="profileAdditionalKeyChance">0%</strong>
+      <strong>0%</strong>
     </div>
 
     <div class="profile-row">
@@ -698,9 +718,9 @@
 
 
 
-<!-- ================================================== -->
+<!-- ================================================= -->
 <!-- COLLECTION -->
-<!-- ================================================== -->
+<!-- ================================================= -->
 
 <main
   id="page-collection"
@@ -719,6 +739,7 @@
 
   </section>
 
+
   <div
     id="collectionList"
     class="character-list"
@@ -729,9 +750,9 @@
 
 
 
-<!-- ================================================== -->
+<!-- ================================================= -->
 <!-- WISHLIST -->
-<!-- ================================================== -->
+<!-- ================================================= -->
 
 <main
   id="page-wishlist"
@@ -748,7 +769,7 @@
       Wishlist
     </h1>
 
-    <p class="wishlist-counter">
+    <p class="wishlist-count">
 
       <span id="wishlistUsed">
         0
@@ -756,7 +777,7 @@
 
       /
 
-      <span id="wishlistMaximum">
+      <span id="wishlistMax">
         10
       </span>
 
@@ -770,7 +791,7 @@
 
       /
 
-      <span id="starwishMaximum">
+      <span id="starwishMax">
         0
       </span>
 
@@ -783,7 +804,7 @@
 
 
   <section
-    id="starwishTradingPanel"
+    id="starwishTradePanel"
     class="wishlist-section hidden"
   >
 
@@ -799,9 +820,9 @@
 
     <button
       class="luxury-button"
-      onclick="tradeWishlistSlotsForStarwish()"
+      onclick="tradeForStarwishSlot()"
     >
-      TRADE FOR +1 STARWISH SLOT
+      TRADE FOR STARWISH SLOT
     </button>
 
   </section>
@@ -816,7 +837,7 @@
 
     <div
       id="wishlistCurrent"
-      class="character-list"
+      class="character-list inner-list"
     >
     </div>
 
@@ -827,34 +848,50 @@
   <section class="wishlist-section">
 
     <p class="section-caption">
-      FIND A CHARACTER
+      CHARACTER SEARCH
     </p>
+
 
     <input
       id="wishlistSearch"
       class="wishlist-search"
-      type="text"
+      type="search"
+      inputmode="search"
       autocomplete="off"
       autocorrect="off"
+      autocapitalize="off"
       spellcheck="false"
-      placeholder="Search name or series..."
+      placeholder="Try: Nami, One Piece, Gojo..."
+      oninput="searchWishlistCharacters(this.value)"
+      onkeyup="searchWishlistCharacters(this.value)"
+      onchange="searchWishlistCharacters(this.value)"
     >
+
+
+    <p
+      id="searchStatus"
+      class="search-status"
+    >
+      Type at least 2 letters.
+    </p>
+
 
     <div
       id="wishlistSearchResults"
-      class="character-list"
+      class="character-list inner-list"
     >
     </div>
 
   </section>
 
+
 </main>
 
 
 
-<!-- ================================================== -->
+<!-- ================================================= -->
 <!-- BADGES -->
-<!-- ================================================== -->
+<!-- ================================================= -->
 
 <main
   id="page-badges"
@@ -871,36 +908,32 @@
       Badges
     </h1>
 
-    <p class="badge-balance">
+    <p class="wishlist-count">
 
-      Balance:
+      ◈
 
-      <span class="currency-symbol">
-        ◈
-      </span>
-
-      <strong id="badgeBalance">
+      <span id="badgeBalance">
         0
-      </strong>
+      </span>
 
     </p>
 
   </section>
 
 
-  <section
+  <div
     id="badgeList"
     class="badge-list"
   >
-  </section>
+  </div>
 
 </main>
 
 
 
-<!-- ================================================== -->
+<!-- ================================================= -->
 <!-- SPHERES -->
-<!-- ================================================== -->
+<!-- ================================================= -->
 
 <main
   id="page-spheres"
@@ -929,12 +962,12 @@
 
     <div class="profile-row">
       <span>Total Sphere Value</span>
-      <strong id="sphereCurrencyDisplay">0</strong>
+      <strong id="sphereValue">0</strong>
     </div>
 
     <div class="profile-row">
-      <span>Sphere Draws Earned</span>
-      <strong id="sphereDrawsDisplay">0</strong>
+      <span>Sphere Draws</span>
+      <strong id="sphereDraws">0</strong>
     </div>
 
   </section>
@@ -950,16 +983,27 @@
 
 
 
+<!-- ================================================= -->
 <!-- PLACEHOLDERS -->
+<!-- ================================================= -->
 
 <main
   id="page-tower"
   class="game-page"
 >
+
   <section class="placeholder-page">
-    <p class="overline">ASCENSION</p>
-    <h1>Infinite Tower</h1>
+
+    <p class="overline">
+      ASCENSION
+    </p>
+
+    <h1>
+      Infinite Tower
+    </h1>
+
   </section>
+
 </main>
 
 
@@ -967,10 +1011,19 @@
   id="page-shop"
   class="game-page"
 >
+
   <section class="placeholder-page">
-    <p class="overline">EXCHANGE</p>
-    <h1>Shop</h1>
+
+    <p class="overline">
+      EXCHANGE
+    </p>
+
+    <h1>
+      Shop
+    </h1>
+
   </section>
+
 </main>
 
 
@@ -978,10 +1031,19 @@
   id="page-gamble"
   class="game-page"
 >
+
   <section class="placeholder-page">
-    <p class="overline">CHANCE</p>
-    <h1>Gamble</h1>
+
+    <p class="overline">
+      CHANCE
+    </p>
+
+    <h1>
+      Gamble
+    </h1>
+
   </section>
+
 </main>
 
 
@@ -989,15 +1051,26 @@
   id="page-stats"
   class="game-page"
 >
+
   <section class="placeholder-page">
-    <p class="overline">RECORDS</p>
-    <h1>Statistics</h1>
+
+    <p class="overline">
+      RECORDS
+    </p>
+
+    <h1>
+      Statistics
+    </h1>
+
   </section>
+
 </main>
 
 
 
+<!-- ================================================= -->
 <!-- SAVE -->
+<!-- ================================================= -->
 
 <main
   id="page-save"
@@ -1022,14 +1095,14 @@
       class="luxury-button"
       onclick="saveGame(true)"
     >
-      Save Now
+      SAVE NOW
     </button>
 
     <button
       class="luxury-button secondary"
       onclick="showSaveScreen()"
     >
-      Save Select
+      RETURN TO SAVE SELECT
     </button>
 
   </section>
@@ -1041,9 +1114,9 @@
 
 
 
-<!-- ================================================== -->
-<!-- SAVE MODAL -->
-<!-- ================================================== -->
+<!-- ================================================= -->
+<!-- SAVE OPTIONS -->
+<!-- ================================================= -->
 
 <div
   id="saveModal"
@@ -1085,8 +1158,8 @@
 
 
 
-<script src="data.js?v=60"></script>
-<script src="app.js?v=60"></script>
+<script src="data.js?v=70"></script>
+<script src="app.js?v=70"></script>
 
 </body>
 
