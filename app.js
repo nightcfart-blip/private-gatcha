@@ -1,9 +1,8 @@
 /*
 ==================================================
 PRIVATE GACHA
-APP.JS
-
-ROUNDS + CLAIMS + WISHLIST
+ROUNDS + WISHLIST
+STABLE VERSION
 ==================================================
 */
 
@@ -34,7 +33,51 @@ function getSaveName(slot) {
 
 /*
 ==================================================
-MAKE SURE OLD SAVES HAVE NEW DATA
+CHECK DATABASE
+==================================================
+*/
+
+function databaseIsReady() {
+
+  return (
+
+    typeof characterDatabase
+      !== "undefined"
+
+    &&
+
+    Array.isArray(
+      characterDatabase
+    )
+
+    &&
+
+    characterDatabase.length > 0
+
+    &&
+
+    typeof rollDatabase
+      !== "undefined"
+
+    &&
+
+    Array.isArray(
+      rollDatabase
+    )
+
+    &&
+
+    rollDatabase.length > 0
+
+  );
+
+}
+
+
+
+/*
+==================================================
+FIX / UPGRADE OLD SAVES
 ==================================================
 */
 
@@ -46,9 +89,7 @@ function ensurePlayerShape() {
 
 
   /*
-  ------------------------------
   CURRENCY
-  ------------------------------
   */
 
   if (!player.currency) {
@@ -70,11 +111,58 @@ function ensurePlayerShape() {
   }
 
 
+  /*
+  STATISTICS FIRST.
+
+  We create this BEFORE anything tries
+  to read from it.
+  */
+
+  if (!player.statistics) {
+
+    player.statistics = {};
+
+  }
+
+
+  const statDefaults = {
+
+    totalRolls: 0,
+
+    totalClaims: 0,
+
+    totalCharactersSeen: 0,
+
+    totalCurrencyEarned: 0,
+
+    totalCurrencySpent: 0,
+
+    totalReactions: 0,
+
+    totalKeysEarned: 0
+
+  };
+
+
+  for (
+    const key in statDefaults
+  ) {
+
+    if (
+      typeof player.statistics[key]
+      !== "number"
+    ) {
+
+      player.statistics[key] =
+        statDefaults[key];
+
+    }
+
+  }
+
 
   /*
-  ------------------------------
   ROUND SYSTEM
-  ------------------------------
   */
 
   if (!player.rounds) {
@@ -112,6 +200,20 @@ function ensurePlayerShape() {
   }
 
 
+  /*
+  Older experimental saves may have
+  rollsPerRound set incorrectly.
+  */
+
+  if (
+    player.rounds.rollsPerRound < 1
+  ) {
+
+    player.rounds.rollsPerRound = 6;
+
+  }
+
+
   if (
     !Array.isArray(
       player.rounds.currentBatch
@@ -123,11 +225,8 @@ function ensurePlayerShape() {
   }
 
 
-
   /*
-  ------------------------------
   CLAIMS
-  ------------------------------
   */
 
   if (!player.claims) {
@@ -163,11 +262,35 @@ function ensurePlayerShape() {
   }
 
 
+  /*
+  Old test saves started with a free
+  claim at Round 1.
+
+  Remove that old starter claim only
+  if nothing has ever been claimed.
+  */
+
+  if (
+
+    player.rounds.current === 1
+
+    &&
+
+    player.statistics.totalClaims === 0
+
+    &&
+
+    player.claims.available === 1
+
+  ) {
+
+    player.claims.available = 0;
+
+  }
+
 
   /*
-  ------------------------------
   STORED CLAIMS
-  ------------------------------
   */
 
   if (!player.storedClaims) {
@@ -203,11 +326,8 @@ function ensurePlayerShape() {
   }
 
 
-
   /*
-  ------------------------------
   COLLECTION
-  ------------------------------
   */
 
   if (
@@ -221,11 +341,8 @@ function ensurePlayerShape() {
   }
 
 
-
   /*
-  ------------------------------
   WISHLIST
-  ------------------------------
   */
 
   if (
@@ -239,11 +356,8 @@ function ensurePlayerShape() {
   }
 
 
-
   /*
-  ------------------------------
   KEYS
-  ------------------------------
   */
 
   if (!player.keys) {
@@ -253,11 +367,8 @@ function ensurePlayerShape() {
   }
 
 
-
   /*
-  ------------------------------
   REACTION POWER
-  ------------------------------
   */
 
   if (!player.reactionPower) {
@@ -275,33 +386,8 @@ function ensurePlayerShape() {
   }
 
 
-
   /*
-  ------------------------------
-  TOWER
-  ------------------------------
-  */
-
-  if (!player.tower) {
-
-    player.tower = {
-
-      currentFloor: 1,
-
-      highestFloor: 1,
-
-      totalFloorsCleared: 0
-
-    };
-
-  }
-
-
-
-  /*
-  ------------------------------
   UPGRADES
-  ------------------------------
   */
 
   if (!player.upgrades) {
@@ -351,52 +437,21 @@ function ensurePlayerShape() {
   }
 
 
-
   /*
-  ------------------------------
-  STATISTICS
-  ------------------------------
+  TOWER
   */
 
-  if (!player.statistics) {
+  if (!player.tower) {
 
-    player.statistics = {};
+    player.tower = {
 
-  }
+      currentFloor: 1,
 
+      highestFloor: 1,
 
-  const statDefaults = {
+      totalFloorsCleared: 0
 
-    totalRolls: 0,
-
-    totalClaims: 0,
-
-    totalCharactersSeen: 0,
-
-    totalCurrencyEarned: 0,
-
-    totalCurrencySpent: 0,
-
-    totalReactions: 0,
-
-    totalKeysEarned: 0
-
-  };
-
-
-  for (
-    const key in statDefaults
-  ) {
-
-    if (
-      typeof player.statistics[key]
-      !== "number"
-    ) {
-
-      player.statistics[key] =
-        statDefaults[key];
-
-    }
+    };
 
   }
 
@@ -412,21 +467,16 @@ LOAD SAVE
 
 function loadSave(slot) {
 
-  console.log(
-    "Opening Save",
-    slot
-  );
-
+  /*
+  Step 1:
+  Read save data.
+  */
 
   const raw =
     localStorage.getItem(
       getSaveName(slot)
     );
 
-
-  /*
-  Load existing save.
-  */
 
   if (raw) {
 
@@ -439,13 +489,15 @@ function loadSave(slot) {
 
     catch (error) {
 
-      console.error(error);
-
       alert(
-        "Save " +
-        slot +
+        "Save "
+        +
+        slot
+        +
         " could not be read."
       );
+
+      console.error(error);
 
       return;
 
@@ -453,31 +505,29 @@ function loadSave(slot) {
 
   }
 
-
-  /*
-  Or create new save.
-  */
-
   else {
 
-    try {
+    /*
+    Make sure data.js actually supplied
+    createDefaultPlayer.
+    */
 
-      player =
-        createDefaultPlayer();
-
-    }
-
-    catch (error) {
-
-      console.error(error);
+    if (
+      typeof createDefaultPlayer
+      !== "function"
+    ) {
 
       alert(
-        "The default save data could not be created."
+        "data.js did not load correctly."
       );
 
       return;
 
     }
+
+
+    player =
+      createDefaultPlayer();
 
   }
 
@@ -487,76 +537,90 @@ function loadSave(slot) {
 
 
   /*
-  Upgrade older saves.
+  Step 2:
+  Repair old save structure.
   */
 
   ensurePlayerShape();
 
 
-
   /*
-  IMPORTANT FIX:
+  Step 3:
+  SHOW THE GAME NOW.
 
-  Enter the app FIRST.
+  This is intentionally before rolling.
 
-  The deck gets generated AFTER the
-  Save screen disappears.
+  Even if the database has an error,
+  you will no longer be stuck at the
+  save-selection screen.
   */
 
-  const saveScreen =
-    document.getElementById(
-      "saveScreen"
-    );
+  document
+    .getElementById("saveScreen")
+    .classList.add("hidden");
 
 
-  const gameScreen =
-    document.getElementById(
-      "gameScreen"
-    );
-
-
-  if (saveScreen) {
-
-    saveScreen.classList.add(
-      "hidden"
-    );
-
-  }
-
-
-  if (gameScreen) {
-
-    gameScreen.classList.remove(
-      "hidden"
-    );
-
-  }
-
-
-
-  /*
-  Show Rolls page.
-  */
-
-  const rollsButton =
-    document.querySelector(
-      '[data-page="rolls"]'
-    );
+  document
+    .getElementById("gameScreen")
+    .classList.remove("hidden");
 
 
   showPage(
     "rolls",
-    rollsButton
+    document.querySelector(
+      '[data-page="rolls"]'
+    )
   );
 
 
-
   /*
-  Now prepare current Round.
+  Step 4:
+  Load/generate the Round.
   */
 
-  prepareCurrentRound();
+  if (!databaseIsReady()) {
 
+    showGameError(
+      "The character database did not finish loading. Check data.js."
+    );
+
+
+    currentBatch = [];
+
+
+    updateEverything();
+
+
+    return;
+
+  }
+
+
+  hideGameError();
+
+
+  if (
+    player.rounds.currentBatch.length > 0
+  ) {
+
+    currentBatch =
+      player.rounds.currentBatch;
+
+  }
+
+  else {
+
+    generateRoundDeck();
+
+  }
+
+
+  /*
+  Step 5:
+  Draw screen.
+  */
+
+  renderDeck();
 
   updateEverything();
 
@@ -568,107 +632,50 @@ function loadSave(slot) {
 
 /*
 ==================================================
-PREPARE CURRENT ROUND
+GAME ERROR
 ==================================================
 */
 
-function prepareCurrentRound() {
+function showGameError(message) {
 
-  /*
-  Safety check so a database problem
-  cannot crash the entire app.
-  */
-
-  if (
-    typeof rollDatabase === "undefined"
-  ) {
-
-    console.error(
-      "rollDatabase is undefined."
+  const box =
+    document.getElementById(
+      "gameError"
     );
 
 
-    alert(
-      "The app opened, but the roll database did not load."
-    );
-
-
-    currentBatch = [];
-
+  if (!box) {
     return;
-
   }
 
 
-  if (
-    !Array.isArray(rollDatabase)
-  ) {
+  box.textContent =
+    message;
 
-    console.error(
-      "rollDatabase is not an array."
+
+  box.classList.remove(
+    "hidden"
+  );
+
+}
+
+
+function hideGameError() {
+
+  const box =
+    document.getElementById(
+      "gameError"
     );
 
 
-    alert(
-      "The roll database has the wrong format."
-    );
-
-
-    currentBatch = [];
-
+  if (!box) {
     return;
-
   }
 
 
-  if (
-    rollDatabase.length === 0
-  ) {
-
-    alert(
-      "The roll database is empty."
-    );
-
-
-    currentBatch = [];
-
-    return;
-
-  }
-
-
-
-  /*
-  Restore saved Round if one exists.
-  */
-
-  if (
-    Array.isArray(
-      player.rounds.currentBatch
-    )
-    &&
-    player.rounds.currentBatch.length > 0
-  ) {
-
-    currentBatch =
-      player.rounds.currentBatch;
-
-
-    renderDeck();
-
-    return;
-
-  }
-
-
-
-  /*
-  Otherwise create Round 1.
-  */
-
-  generateRoundDeck();
-
-  renderDeck();
+  box.classList.add(
+    "hidden"
+  );
 
 }
 
@@ -695,20 +702,16 @@ function saveGame(
   }
 
 
-  player.lastSavedAt =
-    Date.now();
-
-
-  /*
-  Remember current cards too.
-  */
-
   if (player.rounds) {
 
     player.rounds.currentBatch =
       currentBatch;
 
   }
+
+
+  player.lastSavedAt =
+    Date.now();
 
 
   localStorage.setItem(
@@ -749,34 +752,14 @@ function showSaveScreen() {
   saveGame();
 
 
-  const gameScreen =
-    document.getElementById(
-      "gameScreen"
-    );
+  document
+    .getElementById("gameScreen")
+    .classList.add("hidden");
 
 
-  const saveScreen =
-    document.getElementById(
-      "saveScreen"
-    );
-
-
-  if (gameScreen) {
-
-    gameScreen.classList.add(
-      "hidden"
-    );
-
-  }
-
-
-  if (saveScreen) {
-
-    saveScreen.classList.remove(
-      "hidden"
-    );
-
-  }
+  document
+    .getElementById("saveScreen")
+    .classList.remove("hidden");
 
 
   updateSaveSlotInfo();
@@ -787,7 +770,7 @@ function showSaveScreen() {
 
 /*
 ==================================================
-SAVE SELECT INFORMATION
+SAVE FILE DISPLAY
 ==================================================
 */
 
@@ -807,28 +790,26 @@ function updateSaveSlotInfo() {
 
     const title =
       document.getElementById(
-        "slot" +
-        slot +
+        "slot"
+        +
+        slot
+        +
         "Title"
       );
 
 
     const info =
       document.getElementById(
-        "slot" +
-        slot +
+        "slot"
+        +
+        slot
+        +
         "Info"
       );
 
 
-    if (
-      !title
-      ||
-      !info
-    ) {
-
+    if (!title || !info) {
       continue;
-
     }
 
 
@@ -853,10 +834,6 @@ function updateSaveSlotInfo() {
         JSON.parse(raw);
 
 
-      title.textContent =
-        "Continue Collection";
-
-
       const round =
         save.rounds?.current
         ?? 1;
@@ -870,6 +847,10 @@ function updateSaveSlotInfo() {
       const currency =
         save.currency?.kakera
         ?? 0;
+
+
+      title.textContent =
+        "Continue Collection";
 
 
       info.textContent =
@@ -903,7 +884,7 @@ function updateSaveSlotInfo() {
     }
 
 
-    catch (error) {
+    catch {
 
       title.textContent =
         "Damaged Save";
@@ -938,38 +919,18 @@ function openSaveMenu(slot) {
   );
 
 
-  const modal =
-    document.getElementById(
-      "saveModal"
-    );
-
-
-  if (modal) {
-
-    modal.classList.remove(
-      "hidden"
-    );
-
-  }
+  document
+    .getElementById("saveModal")
+    .classList.remove("hidden");
 
 }
 
 
 function closeSaveMenu() {
 
-  const modal =
-    document.getElementById(
-      "saveModal"
-    );
-
-
-  if (modal) {
-
-    modal.classList.add(
-      "hidden"
-    );
-
-  }
+  document
+    .getElementById("saveModal")
+    .classList.add("hidden");
 
 
   selectedSaveSlot =
@@ -1091,7 +1052,7 @@ function resetSelectedSave() {
 
 /*
 ==================================================
-PAGE NAVIGATION
+NAVIGATION
 ==================================================
 */
 
@@ -1100,57 +1061,54 @@ function showPage(
   button
 ) {
 
-  const pages =
-    document.querySelectorAll(
-      ".game-page"
-    );
-
-
-  pages.forEach(
-
-    function (page) {
-
-      page.classList.remove(
-        "active-page"
-      );
-
-    }
-
-  );
-
-
-  const page =
+  const target =
     document.getElementById(
       "page-" + pageName
     );
 
 
-  if (page) {
-
-    page.classList.add(
-      "active-page"
-    );
-
+  if (!target) {
+    return;
   }
 
 
-  const buttons =
-    document.querySelectorAll(
-      ".nav-button"
+  document
+    .querySelectorAll(
+      ".game-page"
+    )
+    .forEach(
+
+      function (page) {
+
+        page.classList.remove(
+          "active-page"
+        );
+
+      }
+
     );
 
 
-  buttons.forEach(
-
-    function (navButton) {
-
-      navButton.classList.remove(
-        "active"
-      );
-
-    }
-
+  target.classList.add(
+    "active-page"
   );
+
+
+  document
+    .querySelectorAll(
+      ".nav-button"
+    )
+    .forEach(
+
+      function (nav) {
+
+        nav.classList.remove(
+          "active"
+        );
+
+      }
+
+    );
 
 
   if (button) {
@@ -1160,7 +1118,6 @@ function showPage(
     );
 
   }
-
 
 
   if (
@@ -1177,15 +1134,6 @@ function showPage(
   ) {
 
     renderCollection();
-
-  }
-
-
-  if (
-    pageName === "profile"
-  ) {
-
-    updateProfile();
 
   }
 
@@ -1206,23 +1154,26 @@ function startNextRound() {
   }
 
 
+  if (!databaseIsReady()) {
+
+    showGameError(
+      "Cannot start a Round because data.js is not loaded."
+    );
+
+    return;
+
+  }
+
+
   player.rounds.current += 1;
 
 
-
   /*
-  Every fifth Round gives +1 Claim.
-
-  5
-  10
-  15
-  20
-  ...
+  Claims arrive every 5 Rounds.
   */
 
   if (
-    player.rounds.current % 5
-    === 0
+    player.rounds.current % 5 === 0
   ) {
 
     player.claims.available += 1;
@@ -1230,8 +1181,8 @@ function startNextRound() {
   }
 
 
-
   generateRoundDeck();
+
 
   renderDeck();
 
@@ -1239,11 +1190,6 @@ function startNextRound() {
 
   saveGame();
 
-
-
-  /*
-  Scroll back to card 1.
-  */
 
   const rail =
     document.getElementById(
@@ -1263,11 +1209,22 @@ function startNextRound() {
 
 /*
 ==================================================
-GENERATE ROUND DECK
+GENERATE ROUND
 ==================================================
 */
 
 function generateRoundDeck() {
+
+  if (!databaseIsReady()) {
+
+    showGameError(
+      "Roll database is unavailable."
+    );
+
+    return;
+
+  }
+
 
   currentBatch = [];
 
@@ -1278,7 +1235,11 @@ function generateRoundDeck() {
       1,
 
       Math.floor(
-        player.rounds.rollsPerRound
+        Number(
+          player.rounds.rollsPerRound
+        )
+        ||
+        6
       )
 
     );
@@ -1294,9 +1255,10 @@ function generateRoundDeck() {
       getRandomEntry();
 
 
-    /*
-    Save a clean independent copy.
-    */
+    if (!result) {
+      continue;
+    }
+
 
     const copy =
       JSON.parse(
@@ -1304,13 +1266,10 @@ function generateRoundDeck() {
       );
 
 
-    currentBatch.push(
-      copy
-    );
+    currentBatch.push(copy);
 
 
     player.statistics.totalRolls += 1;
-
 
 
     if (
@@ -1323,24 +1282,25 @@ function generateRoundDeck() {
     }
 
 
-
     if (
       result.type === "currency"
     ) {
 
-      const amount =
+      const amountWon =
         Number(
-          result.amount || 0
-        );
+          result.amount
+        )
+        ||
+        0;
 
 
       player.currency.kakera +=
-        amount;
+        amountWon;
 
 
       player.statistics
         .totalCurrencyEarned +=
-        amount;
+        amountWon;
 
     }
 
@@ -1356,11 +1316,16 @@ function generateRoundDeck() {
 
 /*
 ==================================================
-EQUAL RANDOM RESULT
+RANDOM RESULT
 ==================================================
 */
 
 function getRandomEntry() {
+
+  if (!databaseIsReady()) {
+    return null;
+  }
+
 
   const index =
     Math.floor(
@@ -1374,9 +1339,7 @@ function getRandomEntry() {
     );
 
 
-  return rollDatabase[
-    index
-  ];
+  return rollDatabase[index];
 
 }
 
@@ -1384,7 +1347,7 @@ function getRandomEntry() {
 
 /*
 ==================================================
-RENDER DECK
+RENDER ROUND
 ==================================================
 */
 
@@ -1403,6 +1366,38 @@ function renderDeck() {
 
   rail.innerHTML =
     "";
+
+
+  if (
+    currentBatch.length === 0
+  ) {
+
+    rail.innerHTML = `
+
+      <article class="roll-card empty-card">
+
+        <div class="empty-face">
+          —
+        </div>
+
+        <p class="empty-caption">
+          no cards available
+        </p>
+
+      </article>
+
+    `;
+
+
+    setText(
+      "cardPosition",
+      "0 / 0"
+    );
+
+
+    return;
+
+  }
 
 
   currentBatch.forEach(
@@ -1448,9 +1443,7 @@ function renderDeck() {
       }
 
 
-      rail.appendChild(
-        card
-      );
+      rail.appendChild(card);
 
     }
 
@@ -1462,15 +1455,8 @@ function renderDeck() {
 
 
   setTimeout(
-
-    function () {
-
-      updateCardPosition();
-
-    },
-
-    50
-
+    updateCardPosition,
+    100
   );
 
 }
@@ -1484,8 +1470,7 @@ CHARACTER CARD
 */
 
 function buildCharacterCard(
-  character,
-  batchIndex
+  character
 ) {
 
   const card =
@@ -1507,10 +1492,13 @@ function buildCharacterCard(
 
 
   const keys =
-    player.keys[
-      character.id
-    ]
-    ?? 0;
+    Number(
+      player.keys[
+        character.id
+      ]
+      ??
+      0
+    );
 
 
   card.className =
@@ -1536,22 +1524,16 @@ function buildCharacterCard(
 
         <div class="rank-orb">
 
-          #${formatNumber(
-            character.rank
-          )}
+          #${formatNumber(character.rank)}
 
         </div>
 
 
         <div class="card-value">
 
-          <i>
-            ◈
-          </i>
+          <i>◈</i>
 
-          ${formatNumber(
-            character.value
-          )}
+          ${formatNumber(character.value)}
 
         </div>
 
@@ -1561,18 +1543,14 @@ function buildCharacterCard(
 
       <h2 class="card-name">
 
-        ${escapeHtml(
-          character.name
-        )}
+        ${escapeHtml(character.name)}
 
       </h2>
 
 
       <p class="card-series">
 
-        ${escapeHtml(
-          character.series
-        )}
+        ${escapeHtml(character.series)}
 
       </p>
 
@@ -1590,8 +1568,8 @@ function buildCharacterCard(
 
         `
         <img
-          src="${escapeHtml(character.image)}"
-          alt="${escapeHtml(character.name)}"
+          src="${escapeAttribute(character.image)}"
+          alt="${escapeAttribute(character.name)}"
           onerror="this.style.display='none'"
         >
         `
@@ -1635,33 +1613,21 @@ function buildCharacterCard(
         <button
           class="claim-button"
 
-          onclick="
-            claimCharacter(
-              '${escapeHtml(character.id)}'
-            )
-          "
+          onclick="claimCharacter('${escapeAttribute(character.id)}')"
 
           ${owned ? "disabled" : ""}
         >
 
           ${
             owned
-
             ?
-
             "OWNED"
-
             :
-
             (
               player.claims.available > 0
-
               ?
-
               "CLAIM"
-
               :
-
               "NO CLAIMS"
             )
           }
@@ -1671,27 +1637,16 @@ function buildCharacterCard(
 
 
         <button
-          class="
-            wish-button
-            ${wished ? "active" : ""}
-          "
+          class="wish-button ${wished ? "active" : ""}"
 
-          onclick="
-            toggleWishlist(
-              '${escapeHtml(character.id)}'
-            )
-          "
+          onclick="toggleWishlist('${escapeAttribute(character.id)}')"
         >
 
           ${
             wished
-
             ?
-
             "★ WISHED"
-
             :
-
             "☆ WISH"
           }
 
@@ -1746,9 +1701,7 @@ function buildCurrencyCard(
 
     <h2 class="currency-result-amount">
 
-      +${formatNumber(
-        result.amount
-      )}
+      +${formatNumber(result.amount)}
 
     </h2>
 
@@ -1760,7 +1713,6 @@ function buildCurrencyCard(
 
     <div class="card-footer">
 
-
       <div class="card-info">
 
         <span>
@@ -1768,13 +1720,10 @@ function buildCurrencyCard(
         </span>
 
         <span>
-
           ${getCurrencyProbability()}%
-
         </span>
 
       </div>
-
 
     </div>
 
@@ -1824,19 +1773,15 @@ function buildEmptyCard() {
 
     <div class="card-footer">
 
-
       <div class="card-info">
 
         <span></span>
 
         <span>
-
           ${getEmptyProbability()}%
-
         </span>
 
       </div>
-
 
     </div>
 
@@ -1851,7 +1796,7 @@ function buildEmptyCard() {
 
 /*
 ==================================================
-CLAIM CHARACTER
+CLAIM
 ==================================================
 */
 
@@ -1880,7 +1825,7 @@ function claimCharacter(
   ) {
 
     alert(
-      "You have no claims available."
+      "No claims available."
     );
 
     return;
@@ -1901,10 +1846,6 @@ function claimCharacter(
 
   renderDeck();
 
-  renderWishlistPage();
-
-  renderCollection();
-
   updateEverything();
 
   saveGame();
@@ -1915,7 +1856,7 @@ function claimCharacter(
 
 /*
 ==================================================
-TOGGLE WISHLIST
+WISHLIST
 ==================================================
 */
 
@@ -1928,24 +1869,22 @@ function toggleWishlist(
   }
 
 
-  const currentIndex =
+  const existingIndex =
     player.wishlist.indexOf(
       characterId
     );
 
 
   /*
-  Character is already wished.
-
-  Remove them.
+  REMOVE
   */
 
   if (
-    currentIndex !== -1
+    existingIndex !== -1
   ) {
 
     player.wishlist.splice(
-      currentIndex,
+      existingIndex,
       1
     );
 
@@ -1953,14 +1892,18 @@ function toggleWishlist(
 
 
   /*
-  Otherwise add them.
+  ADD
   */
 
   else {
 
     const maximum =
-      player.upgrades
-        .wishlistSlots;
+      Number(
+        player.upgrades
+          .wishlistSlots
+      )
+      ||
+      0;
 
 
     if (
@@ -1970,23 +1913,8 @@ function toggleWishlist(
     ) {
 
       alert(
-
-        "Wishlist full: "
-
-        +
-
-        maximum
-
-        +
-
-        " / "
-
-        +
-
-        maximum
-
+        "Your wishlist is full."
       );
-
 
       return;
 
@@ -1999,11 +1927,6 @@ function toggleWishlist(
 
   }
 
-
-  /*
-  Refresh everything that might show
-  Wishlist state.
-  */
 
   renderDeck();
 
@@ -2021,7 +1944,7 @@ function toggleWishlist(
 
 /*
 ==================================================
-WISHLIST PAGE
+WISHLIST SCREEN
 ==================================================
 */
 
@@ -2033,11 +1956,8 @@ function renderWishlistPage() {
 
 
   setText(
-
     "wishlistUsed",
-
     player.wishlist.length
-
   );
 
 
@@ -2073,9 +1993,7 @@ function renderWishlistPage() {
     container.innerHTML = `
 
       <div class="empty-list">
-
         Your wishlist is empty.
-
       </div>
 
     `;
@@ -2087,12 +2005,10 @@ function renderWishlistPage() {
 
     player.wishlist.forEach(
 
-      function (characterId) {
+      function (id) {
 
         const character =
-          findCharacterById(
-            characterId
-          );
+          findCharacterById(id);
 
 
         if (!character) {
@@ -2123,7 +2039,7 @@ function renderWishlistPage() {
 
 /*
 ==================================================
-SEARCH CHARACTERS
+SEARCH
 ==================================================
 */
 
@@ -2135,7 +2051,7 @@ function searchWishlistCharacters() {
     );
 
 
-  const container =
+  const results =
     document.getElementById(
       "wishlistSearchResults"
     );
@@ -2144,12 +2060,16 @@ function searchWishlistCharacters() {
   if (
     !input
     ||
-    !container
+    !results
   ) {
 
     return;
 
   }
+
+
+  results.innerHTML =
+    "";
 
 
   const query =
@@ -2158,20 +2078,30 @@ function searchWishlistCharacters() {
       .toLowerCase();
 
 
-  container.innerHTML =
-    "";
-
-
   if (
     query.length < 2
   ) {
 
-    container.innerHTML = `
+    results.innerHTML = `
 
       <div class="empty-list">
-
         Type at least 2 letters to search.
+      </div>
 
+    `;
+
+
+    return;
+
+  }
+
+
+  if (!databaseIsReady()) {
+
+    results.innerHTML = `
+
+      <div class="empty-list">
+        Character database unavailable.
       </div>
 
     `;
@@ -2184,27 +2114,35 @@ function searchWishlistCharacters() {
 
   const matches =
     characterDatabase
+
       .filter(
 
         function (character) {
 
+          const name =
+            String(
+              character.name
+            )
+            .toLowerCase();
+
+
+          const series =
+            String(
+              character.series
+            )
+            .toLowerCase();
+
+
           return (
-
-            character.name
-              .toLowerCase()
-              .includes(query)
-
+            name.includes(query)
             ||
-
-            character.series
-              .toLowerCase()
-              .includes(query)
-
+            series.includes(query)
           );
 
         }
 
       )
+
       .slice(
         0,
         30
@@ -2215,12 +2153,10 @@ function searchWishlistCharacters() {
     matches.length === 0
   ) {
 
-    container.innerHTML = `
+    results.innerHTML = `
 
       <div class="empty-list">
-
         No characters found.
-
       </div>
 
     `;
@@ -2235,7 +2171,7 @@ function searchWishlistCharacters() {
 
     function (character) {
 
-      container.appendChild(
+      results.appendChild(
 
         buildCharacterListItem(
           character
@@ -2253,7 +2189,7 @@ function searchWishlistCharacters() {
 
 /*
 ==================================================
-CHARACTER LIST ITEM
+CHARACTER LIST ROW
 ==================================================
 */
 
@@ -2290,33 +2226,25 @@ function buildCharacterListItem(
 
       <h3>
 
-        ${escapeHtml(
-          character.name
-        )}
+        ${escapeHtml(character.name)}
 
       </h3>
 
 
       <p>
 
-        ${escapeHtml(
-          character.series
-        )}
+        ${escapeHtml(character.series)}
 
       </p>
 
 
       <small>
 
-        #${formatNumber(
-          character.rank
-        )}
+        #${formatNumber(character.rank)}
 
         ·
 
-        ◈ ${formatNumber(
-          character.value
-        )}
+        ◈ ${formatNumber(character.value)}
 
         ${owned ? " · OWNED" : ""}
 
@@ -2328,16 +2256,9 @@ function buildCharacterListItem(
 
 
     <button
-      class="
-        list-wish-button
-        ${wished ? "active" : ""}
-      "
+      class="list-wish-button ${wished ? "active" : ""}"
 
-      onclick="
-        toggleWishlist(
-          '${escapeHtml(character.id)}'
-        )
-      "
+      onclick="toggleWishlist('${escapeAttribute(character.id)}')"
     >
 
       ${
@@ -2367,19 +2288,20 @@ COLLECTION
 
 function renderCollection() {
 
-  if (!player) {
-    return;
-  }
-
-
   const container =
     document.getElementById(
       "collectionList"
     );
 
 
-  if (!container) {
+  if (
+    !container
+    ||
+    !player
+  ) {
+
     return;
+
   }
 
 
@@ -2395,9 +2317,7 @@ function renderCollection() {
     container.innerHTML = `
 
       <div class="empty-list">
-
         No claimed characters yet.
-
       </div>
 
     `;
@@ -2410,12 +2330,10 @@ function renderCollection() {
 
   player.claimedCharacters.forEach(
 
-    function (characterId) {
+    function (id) {
 
       const character =
-        findCharacterById(
-          characterId
-        );
+        findCharacterById(id);
 
 
       if (!character) {
@@ -2445,18 +2363,24 @@ FIND CHARACTER
 ==================================================
 */
 
-function findCharacterById(
-  characterId
-) {
+function findCharacterById(id) {
+
+  if (
+    typeof characterDatabase
+    === "undefined"
+  ) {
+
+    return null;
+
+  }
+
 
   return characterDatabase.find(
 
     function (character) {
 
       return (
-        character.id
-        ===
-        characterId
+        character.id === id
       );
 
     }
@@ -2469,17 +2393,20 @@ function findCharacterById(
 
 /*
 ==================================================
-SPAWN PROBABILITIES
+PROBABILITY
 ==================================================
 */
 
 function getCharacterProbability() {
 
+  if (!databaseIsReady()) {
+    return "0";
+  }
+
+
   return formatPercent(
 
-    1
-    /
-    rollDatabase.length
+    1 / rollDatabase.length
 
   );
 
@@ -2488,11 +2415,14 @@ function getCharacterProbability() {
 
 function getCurrencyProbability() {
 
+  if (!databaseIsReady()) {
+    return "0";
+  }
+
+
   return formatPercent(
 
-    2
-    /
-    rollDatabase.length
+    2 / rollDatabase.length
 
   );
 
@@ -2501,20 +2431,21 @@ function getCurrencyProbability() {
 
 function getEmptyProbability() {
 
+  if (!databaseIsReady()) {
+    return "0";
+  }
+
+
   return formatPercent(
 
-    1000
-    /
-    rollDatabase.length
+    1000 / rollDatabase.length
 
   );
 
 }
 
 
-function formatPercent(
-  decimal
-) {
+function formatPercent(decimal) {
 
   const percentage =
     decimal * 100;
@@ -2525,6 +2456,15 @@ function formatPercent(
   ) {
 
     return percentage.toFixed(2);
+
+  }
+
+
+  if (
+    percentage >= 0.1
+  ) {
+
+    return percentage.toFixed(3);
 
   }
 
@@ -2564,6 +2504,12 @@ function updateCardPosition() {
     cards.length === 0
   ) {
 
+    setText(
+      "cardPosition",
+      "0 / 0"
+    );
+
+
     return;
 
   }
@@ -2571,19 +2517,17 @@ function updateCardPosition() {
 
   const center =
     rail.scrollLeft
+
     +
-    (
-      rail.clientWidth
-      /
-      2
-    );
+
+    rail.clientWidth / 2;
 
 
-  let closestIndex =
+  let closest =
     0;
 
 
-  let closestDistance =
+  let smallest =
     Infinity;
 
 
@@ -2600,11 +2544,7 @@ function updateCardPosition() {
 
         +
 
-        (
-          card.offsetWidth
-          /
-          2
-        );
+        card.offsetWidth / 2;
 
 
       const distance =
@@ -2616,16 +2556,14 @@ function updateCardPosition() {
 
 
       if (
-        distance
-        <
-        closestDistance
+        distance < smallest
       ) {
 
-        closestDistance =
+        smallest =
           distance;
 
 
-        closestIndex =
+        closest =
           index;
 
       }
@@ -2639,7 +2577,7 @@ function updateCardPosition() {
 
     "cardPosition",
 
-    (closestIndex + 1)
+    (closest + 1)
 
     +
 
@@ -2657,32 +2595,48 @@ function updateCardPosition() {
 
 /*
 ==================================================
-NEXT CLAIM
+NEXT CLAIM ROUND
 ==================================================
 */
 
 function updateNextClaimNotice() {
 
-  const currentRound =
+  if (!player) {
+    return;
+  }
+
+
+  const round =
     player.rounds.current;
 
 
-  const nextClaimRound =
+  const next =
+    round
+
+    +
 
     (
-      Math.floor(
-        currentRound / 5
-      )
+      5
+      -
+      (round % 5 || 5)
+    );
 
-      +
 
-      1
+  /*
+  Above formula gives current round when
+  divisible by 5, so correct it.
+  */
 
-    )
+  const nextClaimRound =
+    round % 5 === 0
 
-    *
+    ?
 
-    5;
+    round + 5
+
+    :
+
+    next;
 
 
   setText(
@@ -2726,11 +2680,15 @@ function updateProfile() {
       ) {
 
         return (
+
           total
+
           +
+
           Number(
             amount || 0
           )
+
         );
 
       },
@@ -2849,9 +2807,17 @@ function updateProfile() {
 
     "profileRollpool",
 
+    databaseIsReady()
+
+    ?
+
     formatNumber(
       rollDatabase.length
     )
+
+    :
+
+    "Unavailable"
 
   );
 
@@ -2956,7 +2922,7 @@ function updateProfile() {
 
 /*
 ==================================================
-UPDATE ALL DISPLAY VALUES
+UPDATE UI
 ==================================================
 */
 
@@ -2971,20 +2937,14 @@ function updateEverything() {
 
 
   setText(
-
     "currentSlot",
-
     activeSaveSlot
-
   );
 
 
   setText(
-
     "roundDisplay",
-
     player.rounds.current
-
   );
 
 
@@ -3057,9 +3017,7 @@ function setText(
 ) {
 
   const element =
-    document.getElementById(
-      id
-    );
+    document.getElementById(id);
 
 
   if (element) {
@@ -3072,22 +3030,18 @@ function setText(
 }
 
 
-function formatNumber(
-  number
-) {
+function formatNumber(value) {
 
   return Number(
-    number ?? 0
+    value ?? 0
   ).toLocaleString();
 
 }
 
 
-function escapeHtml(
-  text
-) {
+function escapeHtml(value) {
 
-  return String(text)
+  return String(value)
 
     .replaceAll(
       "&",
@@ -3113,6 +3067,13 @@ function escapeHtml(
       "'",
       "&#039;"
     );
+
+}
+
+
+function escapeAttribute(value) {
+
+  return escapeHtml(value);
 
 }
 
