@@ -17,8 +17,8 @@
   --gold: #caae72;
   --gold-light: #e0cb97;
 
-  --parchment: #e4d6b4;
   --cream: #efe7d3;
+  --parchment: #e4d6b4;
 
   --muted: #968c91;
 
@@ -29,6 +29,8 @@
 
 
 html {
+
+  margin: 0;
 
   min-height: 100%;
 
@@ -43,6 +45,8 @@ body {
 
   min-height: 100vh;
   min-height: 100dvh;
+
+  overflow-x: hidden;
 
   background:
     radial-gradient(
@@ -62,8 +66,6 @@ body {
     Georgia,
     "Times New Roman",
     serif;
-
-  overscroll-behavior-y: none;
 
   -webkit-text-size-adjust: 100%;
 
@@ -99,11 +101,29 @@ button {
 
   font-size: 9px;
 
-  font-weight: 700;
+  font-weight: bold;
 
   letter-spacing: 2.6px;
 
   text-transform: uppercase;
+
+}
+
+
+.section-caption {
+
+  color: var(--gold);
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 8px;
+
+  font-weight: bold;
+
+  letter-spacing: 2px;
 
 }
 
@@ -125,19 +145,24 @@ button {
 
 
 
-/* ================================================== */
+/* ================================================= */
 /* SAVE */
-/* ================================================== */
+/* ================================================= */
 
 .save-screen {
 
-  min-height: 100vh;
   min-height: 100dvh;
 
   padding:
-    max(50px, env(safe-area-inset-top))
+    max(
+      48px,
+      env(safe-area-inset-top)
+    )
     20px
-    max(50px, env(safe-area-inset-bottom));
+    max(
+      45px,
+      env(safe-area-inset-bottom)
+    );
 
   display: flex;
 
@@ -170,7 +195,7 @@ button {
 
   color: var(--gold);
 
-  font-size: 31px;
+  font-size: 30px;
 
 }
 
@@ -181,7 +206,7 @@ button {
 
   font-size: 48px;
 
-  font-weight: 400;
+  font-weight: normal;
 
   letter-spacing: 2px;
 
@@ -233,7 +258,7 @@ button {
 
 .save-file {
 
-  min-height: 130px;
+  min-height: 128px;
 
   position: relative;
 
@@ -242,7 +267,7 @@ button {
   grid-template-columns:
     70px
     1fr
-    35px;
+    40px;
 
   align-items: center;
 
@@ -263,7 +288,10 @@ button {
   text-align: left;
 
   box-shadow:
-    0 22px 50px rgba(0,0,0,0.48);
+    0
+    22px
+    50px
+    rgba(0,0,0,0.48);
 
 }
 
@@ -324,7 +352,7 @@ button {
 
   font-size: 22px;
 
-  font-weight: 400;
+  font-weight: normal;
 
 }
 
@@ -346,7 +374,7 @@ button {
 
   position: relative;
 
-  z-index: 5;
+  z-index: 4;
 
   border: 0;
 
@@ -358,9 +386,9 @@ button {
 
 
 
-/* ================================================== */
-/* APP */
-/* ================================================== */
+/* ================================================= */
+/* GAME */
+/* ================================================= */
 
 .game-screen {
 
@@ -370,9 +398,6 @@ button {
   max-width: 1100px;
 
   margin: auto;
-
-  padding-bottom:
-    env(safe-area-inset-bottom);
 
   background:
     linear-gradient(
@@ -480,9 +505,9 @@ button {
 
 
 
-/* ================================================== */
+/* ================================================= */
 /* NAV */
-/* ================================================== */
+/* ================================================= */
 
 .main-nav {
 
@@ -495,15 +520,13 @@ button {
       env(safe-area-inset-top)
     );
 
-  z-index: 49;
+  z-index: 45;
 
   display: flex;
 
   overflow-x: auto;
 
   -webkit-overflow-scrolling: touch;
-
-  touch-action: pan-x;
 
   border-bottom: 1px solid var(--line);
 
@@ -527,7 +550,9 @@ button {
 
   border: 0;
 
-  border-right: 1px solid var(--line-soft);
+  border-right:
+    1px solid
+    var(--line-soft);
 
   background: transparent;
 
@@ -555,15 +580,19 @@ button {
 
 
 
-/* ================================================== */
+/* ================================================= */
 /* PAGES */
-/* ================================================== */
+/* ================================================= */
 
 .game-page {
 
   display: none;
 
-  padding-bottom: 70px;
+  padding-bottom:
+    max(
+      70px,
+      env(safe-area-inset-bottom)
+    );
 
 }
 
@@ -574,9 +603,9 @@ button {
 
 
 
-/* ================================================== */
-/* ROUND */
-/* ================================================== */
+/* ================================================= */
+/* ROUND STRIP */
+/* ================================================= */
 
 .round-strip {
 
@@ -644,7 +673,7 @@ button {
 
   font-size: 7px;
 
-  letter-spacing: 1.6px;
+  letter-spacing: 1.5px;
 
 }
 
@@ -653,7 +682,7 @@ button {
 
   color: var(--gold-light);
 
-  font-size: 23px;
+  font-size: 22px;
 
   font-weight: normal;
 
@@ -679,9 +708,9 @@ button {
 
 
 
-/* ================================================== */
-/* ROLL HEADING */
-/* ================================================== */
+/* ================================================= */
+/* DRAW HEADER */
+/* ================================================= */
 
 .roll-title-row {
 
@@ -702,7 +731,7 @@ button {
 
   font-size: 34px;
 
-  font-weight: 400;
+  font-weight: normal;
 
 }
 
@@ -738,7 +767,7 @@ button {
 }
 
 
-.round-reward-notice {
+.round-notice {
 
   margin: 0 18px 14px;
 
@@ -755,15 +784,22 @@ button {
 
   font-size: 9px;
 
-  line-height: 1.5;
-
 }
 
 
 
-/* ================================================== */
-/* SWIPE RAIL */
-/* ================================================== */
+/* ================================================= */
+/* DECK */
+/* ================================================= */
+
+.deck-shell {
+
+  position: relative;
+
+  width: 100%;
+
+}
+
 
 .roll-rail {
 
@@ -771,30 +807,29 @@ button {
 
   display: flex;
 
-  flex-flow: row nowrap;
+  flex-wrap: nowrap;
 
   gap: 18px;
 
-  overflow-x: scroll;
+  overflow-x: auto;
 
   overflow-y: hidden;
-
-  -webkit-overflow-scrolling: touch;
-
-  scroll-snap-type: x mandatory;
-
-  scroll-behavior: smooth;
-
-  overscroll-behavior-x: contain;
-
-  touch-action: pan-x;
 
   padding:
     8px
     9vw
     30px;
 
+  -webkit-overflow-scrolling: touch;
+
+  scroll-snap-type:
+    x mandatory;
+
   scrollbar-width: none;
+
+  user-select: none;
+
+  -webkit-user-select: none;
 
 }
 
@@ -804,10 +839,55 @@ button {
 }
 
 
+.roll-rail.dragging {
 
-/* ================================================== */
+  scroll-snap-type: none;
+
+}
+
+
+.deck-arrow {
+
+  position: absolute;
+
+  top: 46%;
+
+  z-index: 20;
+
+  width: 34px;
+
+  height: 54px;
+
+  border: 1px solid var(--line);
+
+  background:
+    rgba(16,14,20,0.82);
+
+  color: var(--gold-light);
+
+  font-size: 29px;
+
+  line-height: 1;
+
+  backdrop-filter: blur(5px);
+
+}
+
+
+.deck-arrow.left {
+  left: 4px;
+}
+
+
+.deck-arrow.right {
+  right: 4px;
+}
+
+
+
+/* ================================================= */
 /* CARDS */
-/* ================================================== */
+/* ================================================= */
 
 .roll-card {
 
@@ -819,15 +899,13 @@ button {
   width:
     min(81vw, 390px);
 
-  min-height: 590px;
+  min-height: 580px;
 
   position: relative;
 
   overflow: hidden;
 
   scroll-snap-align: center;
-
-  scroll-snap-stop: always;
 
   display: flex;
 
@@ -846,7 +924,10 @@ button {
     var(--teal);
 
   box-shadow:
-    8px 14px 30px rgba(0,0,0,0.55);
+    8px
+    14px
+    30px
+    rgba(0,0,0,0.55);
 
 }
 
@@ -872,12 +953,18 @@ button {
 
 .roll-card.wished {
 
-  border-color: var(--gold-light);
+  border-color:
+    var(--gold-light);
 
   box-shadow:
-    0 0 0 2px rgba(224,203,151,0.14),
-    0 0 35px rgba(202,174,114,0.22),
-    8px 14px 30px rgba(0,0,0,0.55);
+    0
+    0
+    34px
+    rgba(202,174,114,0.25),
+    8px
+    14px
+    30px
+    rgba(0,0,0,0.55);
 
 }
 
@@ -887,9 +974,14 @@ button {
   border-color: #f0dd91;
 
   box-shadow:
-    0 0 0 2px rgba(255,236,165,0.2),
-    0 0 45px rgba(240,211,110,0.32),
-    8px 14px 30px rgba(0,0,0,0.55);
+    0
+    0
+    44px
+    rgba(240,211,110,0.32),
+    8px
+    14px
+    30px
+    rgba(0,0,0,0.55);
 
 }
 
@@ -903,17 +995,17 @@ button {
 
   right: -31px;
 
+  z-index: 8;
+
   width: 120px;
 
   padding: 5px 0;
-
-  z-index: 8;
 
   transform: rotate(45deg);
 
   background: var(--gold);
 
-  color: #21171f;
+  color: var(--ink);
 
   font-family: Arial, sans-serif;
 
@@ -921,7 +1013,7 @@ button {
 
   font-weight: bold;
 
-  letter-spacing: 1.5px;
+  letter-spacing: 1.4px;
 
   text-align: center;
 
@@ -948,7 +1040,8 @@ button {
 
   justify-content: center;
 
-  color: rgba(222,196,130,0.65);
+  color:
+    rgba(222,196,130,0.65);
 
   font-size: 13px;
 
@@ -957,7 +1050,10 @@ button {
 
 .card-top {
 
-  padding: 6px 20px 17px;
+  padding:
+    6px
+    20px
+    17px;
 
 }
 
@@ -1033,7 +1129,7 @@ button {
 
   font-size: 27px;
 
-  font-weight: 400;
+  font-weight: normal;
 
 }
 
@@ -1053,14 +1149,11 @@ button {
 }
 
 
-
-/* ART */
-
 .card-art {
 
   flex: 1;
 
-  min-height: 310px;
+  min-height: 300px;
 
   position: relative;
 
@@ -1122,116 +1215,12 @@ button {
 }
 
 
-
-/* REACTION */
-
-.reaction-box {
-
-  margin:
-    12px
-    17px
-    0;
-
-  padding: 11px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  gap: 10px;
-
-  border: 1px solid var(--line);
-
-  background:
-    rgba(15,12,19,0.45);
-
-}
-
-
-.reaction-left {
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 8px;
-
-}
-
-
-.reaction-gem {
-
-  font-size: 23px;
-
-  font-style: normal;
-
-}
-
-
-.reaction-name {
-
-  display: block;
-
-  color: var(--cream);
-
-  font-family: Arial, sans-serif;
-
-  font-size: 8px;
-
-  letter-spacing: 1px;
-
-}
-
-
-.reaction-value {
-
-  display: block;
-
-  margin-top: 2px;
-
-  color: var(--muted);
-
-  font-family: Arial, sans-serif;
-
-  font-size: 8px;
-
-}
-
-
-.reaction-collect {
-
-  padding: 8px 9px;
-
-  border: 1px solid var(--gold);
-
-  background: transparent;
-
-  color: var(--gold);
-
-  font-family: Arial, sans-serif;
-
-  font-size: 7px;
-
-  letter-spacing: 1px;
-
-}
-
-
-.reaction-collect:disabled {
-
-  opacity: 0.35;
-
-}
-
-
-
-/* CARD FOOTER */
-
 .card-footer {
 
-  padding: 15px 19px 20px;
+  padding:
+    15px
+    19px
+    20px;
 
 }
 
@@ -1297,7 +1286,7 @@ button {
 
 
 .claim-button:disabled {
-  opacity: 0.42;
+  opacity: 0.4;
 }
 
 
@@ -1311,7 +1300,170 @@ button {
 
 
 
-/* CURRENCY */
+/* ================================================= */
+/* REACTIONS */
+/* ================================================= */
+
+.reaction-box {
+
+  margin:
+    12px
+    17px
+    0;
+
+  padding: 10px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 8px;
+
+  border: 1px solid var(--line);
+
+  background:
+    rgba(15,12,19,0.44);
+
+}
+
+
+.reaction-left {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+}
+
+
+.reaction-gem {
+
+  font-size: 24px;
+
+  font-style: normal;
+
+}
+
+
+.reaction-name {
+
+  display: block;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 8px;
+
+  letter-spacing: 1px;
+
+}
+
+
+.reaction-value {
+
+  display: block;
+
+  margin-top: 3px;
+
+  color: var(--muted);
+
+  font-family: Arial, sans-serif;
+
+  font-size: 8px;
+
+}
+
+
+.reaction-collect {
+
+  padding: 8px;
+
+  border: 1px solid var(--gold);
+
+  background: transparent;
+
+  color: var(--gold);
+
+  font-family: Arial, sans-serif;
+
+  font-size: 7px;
+
+}
+
+
+.reaction-collect:disabled {
+  opacity: 0.4;
+}
+
+
+.reaction-purple {
+  color: #a17be8;
+}
+
+
+.reaction-blue {
+  color: #639cde;
+}
+
+
+.reaction-teal {
+  color: #55c8c0;
+}
+
+
+.reaction-green {
+  color: #6ec884;
+}
+
+
+.reaction-yellow {
+  color: #e8cf6b;
+}
+
+
+.reaction-orange {
+  color: #e49c52;
+}
+
+
+.reaction-red {
+  color: #dd655f;
+}
+
+
+.reaction-white {
+  color: #f4eee2;
+}
+
+
+.reaction-black {
+
+  color: #080808;
+
+  text-shadow:
+    0 0 2px #aaa;
+
+}
+
+
+.reaction-rainbow {
+
+  color: #f1d783;
+
+  text-shadow:
+    -1px 0 #b07edd,
+    1px 0 #5ac1c6;
+
+}
+
+
+
+/* ================================================= */
+/* SPECIAL CARDS */
+/* ================================================= */
 
 .currency-card {
 
@@ -1363,9 +1515,6 @@ button {
 }
 
 
-
-/* EMPTY */
-
 .empty-card {
 
   justify-content: center;
@@ -1413,14 +1562,14 @@ button {
 
 
 
-/* ================================================== */
+/* ================================================= */
 /* NEXT ROUND */
-/* ================================================== */
+/* ================================================= */
 
 .next-round-area {
 
   padding:
-    2px
+    3px
     19px
     40px;
 
@@ -1480,9 +1629,9 @@ button {
 
 
 
-/* ================================================== */
-/* GENERAL PAGE UI */
-/* ================================================== */
+/* ================================================= */
+/* GENERAL PAGE */
+/* ================================================= */
 
 .page-heading {
 
@@ -1600,30 +1749,11 @@ button {
 }
 
 
-
-/* ================================================== */
-/* REACTION COLORS */
-/* ================================================== */
-
 .reaction-section {
 
   margin:
     32px
     17px;
-
-}
-
-
-.small-section-label,
-.section-caption {
-
-  color: var(--gold);
-
-  font-family: Arial, sans-serif;
-
-  font-size: 8px;
-
-  letter-spacing: 2px;
 
 }
 
@@ -1670,44 +1800,12 @@ button {
 }
 
 
-.reaction-purple { color: #a17be8; }
-.reaction-blue { color: #639cde; }
-.reaction-teal { color: #55c8c0; }
-.reaction-green { color: #6ec884; }
-.reaction-yellow { color: #e8cf6b; }
-.reaction-orange { color: #e49c52; }
-.reaction-red { color: #dd655f; }
-.reaction-white { color: #f4eee2; }
 
-
-.reaction-black {
-
-  color: #080808;
-
-  text-shadow:
-    0 0 2px #aaa;
-
-}
-
-
-.reaction-rainbow {
-
-  color: #f1d783;
-
-  text-shadow:
-    -1px 0 #b07edd,
-    1px 0 #5ac1c6;
-
-}
-
-
-
-/* ================================================== */
+/* ================================================= */
 /* WISHLIST */
-/* ================================================== */
+/* ================================================= */
 
-.wishlist-counter,
-.badge-balance {
+.wishlist-count {
 
   margin: 9px 0 0;
 
@@ -1737,32 +1835,69 @@ button {
   margin:
     10px
     0
-    14px;
+    8px;
 
   padding:
-    13px
     14px;
 
-  border: 1px solid var(--line);
+  border: 1px solid var(--gold);
 
   border-radius: 0;
 
   outline: none;
 
   background:
-    rgba(16,60,64,0.22);
+    #101c1f;
 
   color: var(--cream);
 
-  font-family: Arial, sans-serif;
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
 
   font-size: 16px;
+
+  -webkit-appearance: none;
+
+}
+
+
+.wishlist-search:focus {
+
+  border-color:
+    var(--gold-light);
+
+  box-shadow:
+    0
+    0
+    0
+    1px
+    rgba(224,203,151,0.15);
 
 }
 
 
 .wishlist-search::placeholder {
-  color: #756c74;
+  color: #736a71;
+}
+
+
+.search-status {
+
+  min-height: 18px;
+
+  margin:
+    0
+    0
+    10px;
+
+  color: var(--muted);
+
+  font-family: Arial, sans-serif;
+
+  font-size: 9px;
+
 }
 
 
@@ -1782,19 +1917,19 @@ button {
 }
 
 
-.wishlist-section .character-list {
+.inner-list {
   padding: 0;
 }
 
 
 .character-list-item {
 
-  min-height: 70px;
+  min-height: 72px;
 
   display: grid;
 
   grid-template-columns:
-    1fr
+    minmax(0, 1fr)
     auto;
 
   align-items: center;
@@ -1813,6 +1948,13 @@ button {
 }
 
 
+.character-list-info {
+
+  min-width: 0;
+
+}
+
+
 .character-list-info h3 {
 
   margin:
@@ -1820,9 +1962,15 @@ button {
     0
     4px;
 
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
   font-size: 15px;
 
   font-weight: normal;
+
+  white-space: nowrap;
 
 }
 
@@ -1831,6 +1979,8 @@ button {
 
   margin: 0;
 
+  overflow: hidden;
+
   color: var(--muted);
 
   font-family: Arial, sans-serif;
@@ -1838,6 +1988,10 @@ button {
   font-size: 8px;
 
   letter-spacing: 1px;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
 
 }
 
@@ -1871,7 +2025,7 @@ button {
 .list-wish-button,
 .list-star-button {
 
-  min-width: 82px;
+  min-width: 80px;
 
   padding: 8px;
 
@@ -1899,15 +2053,13 @@ button {
 
 
 .list-star-button:disabled {
-
   opacity: 0.3;
-
 }
 
 
 .empty-list {
 
-  padding: 22px 0;
+  padding: 20px 0;
 
   color: var(--muted);
 
@@ -1919,9 +2071,9 @@ button {
 
 
 
-/* ================================================== */
+/* ================================================= */
 /* BADGES */
-/* ================================================== */
+/* ================================================= */
 
 .badge-list {
 
@@ -1941,10 +2093,6 @@ button {
 
 .badge-card {
 
-  position: relative;
-
-  overflow: hidden;
-
   border: 1px solid var(--line);
 
   background:
@@ -1954,15 +2102,13 @@ button {
 
 
 .badge-card.locked {
-
-  opacity: 0.48;
-
+  opacity: 0.42;
 }
 
 
 .badge-card-header {
 
-  padding: 17px;
+  padding: 16px;
 
   display: flex;
 
@@ -1970,7 +2116,9 @@ button {
 
   justify-content: space-between;
 
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom:
+    1px solid
+    var(--line-soft);
 
 }
 
@@ -1979,7 +2127,7 @@ button {
 
   margin: 0;
 
-  font-size: 23px;
+  font-size: 22px;
 
   font-weight: normal;
 
@@ -1992,18 +2140,7 @@ button {
 
   font-family: Arial, sans-serif;
 
-  font-size: 9px;
-
-  letter-spacing: 1px;
-
-}
-
-
-.badge-level-list {
-
-  display: flex;
-
-  flex-direction: column;
+  font-size: 8px;
 
 }
 
@@ -2014,7 +2151,9 @@ button {
     13px
     15px;
 
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom:
+    1px solid
+    var(--line-soft);
 
 }
 
@@ -2038,8 +2177,6 @@ button {
 
   justify-content: space-between;
 
-  gap: 10px;
-
   font-family: Arial, sans-serif;
 
   font-size: 9px;
@@ -2048,16 +2185,7 @@ button {
 
 
 .badge-level-name {
-
   color: var(--gold-light);
-
-}
-
-
-.badge-cost {
-
-  color: var(--cream);
-
 }
 
 
@@ -2068,7 +2196,7 @@ button {
     0
     0;
 
-  padding-left: 16px;
+  padding-left: 17px;
 
   color: var(--muted);
 
@@ -2099,8 +2227,6 @@ button {
 
   font-size: 8px;
 
-  letter-spacing: 1px;
-
 }
 
 
@@ -2110,9 +2236,9 @@ button {
 
 
 
-/* ================================================== */
+/* ================================================= */
 /* SPHERES */
-/* ================================================== */
+/* ================================================= */
 
 .sphere-inventory {
 
@@ -2159,9 +2285,9 @@ button {
 
 
 
-/* ================================================== */
+/* ================================================= */
 /* OTHER */
-/* ================================================== */
+/* ================================================= */
 
 .placeholder-page {
 
@@ -2222,7 +2348,9 @@ button {
 
 
 
+/* ================================================= */
 /* MODAL */
+/* ================================================= */
 
 .modal {
 
@@ -2292,6 +2420,7 @@ button {
 .modal-sheet button.danger {
   color: #db8585;
 }
+
 
 
 @media (min-width: 700px) {
