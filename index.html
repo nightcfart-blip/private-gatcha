@@ -7,14 +7,29 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+
+  <meta
+    name="theme-color"
+    content="#17141f"
+  >
+
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
+
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
   >
 
   <title>Private Gacha</title>
 
   <link
     rel="stylesheet"
-    href="style.css?v=20"
+    href="style.css?v=30"
   >
 
 </head>
@@ -196,7 +211,7 @@
 
 
   <!-- ================================= -->
-  <!-- MAIN APPLICATION -->
+  <!-- MAIN APP -->
   <!-- ================================= -->
 
   <section
@@ -205,7 +220,7 @@
   >
 
 
-    <!-- TOP TITLE BAR -->
+    <!-- HEADER -->
 
     <header class="app-header">
 
@@ -241,9 +256,7 @@
 
 
 
-    <!-- ================================= -->
-    <!-- NAVIGATION -->
-    <!-- ================================= -->
+    <!-- NAV -->
 
     <nav class="main-nav">
 
@@ -361,23 +374,38 @@
     >
 
 
-      <section class="roll-status">
+      <!-- ROUND STRIP -->
+
+      <section class="round-strip">
 
 
-        <div>
+        <div class="round-emblem">
 
-          <span>
-            ROLLS
-          </span>
+          <small>
+            ROUND
+          </small>
 
-          <strong id="rollsAvailableDisplay">
-            0
+          <strong id="roundDisplay">
+            1
           </strong>
 
         </div>
 
 
-        <div>
+        <div class="round-resource">
+
+          <span>
+            ROLLS
+          </span>
+
+          <strong id="rollsDisplay">
+            6
+          </strong>
+
+        </div>
+
+
+        <div class="round-resource">
 
           <span>
             CLAIMS
@@ -390,7 +418,7 @@
         </div>
 
 
-        <div>
+        <div class="round-resource">
 
           <span>
             BALANCE
@@ -415,12 +443,14 @@
 
 
 
+      <!-- TITLE -->
+
       <section class="roll-title-row">
 
         <div>
 
           <p class="overline">
-            CURRENT ROLL DECK
+            CURRENT ROUND
           </p>
 
           <h1>
@@ -433,7 +463,7 @@
         <div class="roll-position">
 
           <span id="cardPosition">
-            —
+            1 / 6
           </span>
 
           <small>
@@ -446,39 +476,44 @@
 
 
 
+      <!-- CARD RAIL -->
+
       <section
         id="rollRail"
         class="roll-rail"
       >
-
       </section>
 
 
-      <div
-        id="noRollMessage"
-        class="no-roll-message hidden"
-      >
 
-        <span class="large-glyph">
-          ◇
-        </span>
+      <!-- NEXT ROUND -->
 
-        <h2>
-          No rolls available
-        </h2>
+      <section class="next-round-area">
 
-        <p>
-          Roll regeneration will be added with the upgrade system.
+
+        <div class="round-rule">
+
+          <span>
+            ✦
+          </span>
+
+        </div>
+
+
+        <p id="nextClaimNotice">
+          Next claim on Round 5
         </p>
 
+
         <button
-          class="dev-refill"
-          onclick="temporaryRefillRolls()"
+          class="next-round-button"
+          onclick="startNextRound()"
         >
-          Temporary: Refill 10 Rolls
+          BEGIN NEXT ROUND
         </button>
 
-      </div>
+
+      </section>
 
 
     </main>
@@ -515,11 +550,24 @@
         <div class="profile-row">
 
           <span>
-            Rolls
+            Round
+          </span>
+
+          <strong id="profileRound">
+            1
+          </strong>
+
+        </div>
+
+
+        <div class="profile-row">
+
+          <span>
+            Rolls per Round
           </span>
 
           <strong id="profileRolls">
-            0
+            6
           </strong>
 
         </div>
@@ -567,7 +615,9 @@
         <div class="profile-row">
 
           <span>
-            <i class="currency-symbol">◈</i>
+            <i class="currency-symbol">
+              ◈
+            </i>
             Bonus when Wished
           </span>
 
@@ -634,7 +684,7 @@
 
 
 
-      <!-- CURRENCY / REACTION -->
+      <!-- CURRENCY -->
 
       <section class="profile-section">
 
@@ -649,7 +699,7 @@
         </h2>
 
 
-        <div class="profile-panel">
+        <section class="profile-panel">
 
 
           <div class="profile-row">
@@ -731,21 +781,21 @@
               <i class="reaction-white">◈</i>
             </span>
 
-            <strong id="profileWhiteAmount">
+            <strong>
               3–4
             </strong>
 
           </div>
 
 
-        </div>
+        </section>
 
 
       </section>
 
 
 
-      <!-- REACTION TABLE -->
+      <!-- REACTION RARITY -->
 
       <section class="reaction-section">
 
@@ -759,182 +809,72 @@
 
 
           <div>
-
-            <span>
-              <i class="reaction-purple">◈</i>
-              Purple
-            </span>
-
-            <span>
-              4.4%
-            </span>
-
-            <strong>
-              1,000
-            </strong>
-
+            <span><i class="reaction-purple">◈</i> Purple</span>
+            <span>4.4%</span>
+            <strong>1,000</strong>
           </div>
 
 
           <div>
-
-            <span>
-              <i class="reaction-blue">◈</i>
-              Blue
-            </span>
-
-            <span>
-              30.1%
-            </span>
-
-            <strong>
-              1,001–1,500
-            </strong>
-
+            <span><i class="reaction-blue">◈</i> Blue</span>
+            <span>30.1%</span>
+            <strong>1,001–1,500</strong>
           </div>
 
 
           <div>
-
-            <span>
-              <i class="reaction-teal">◈</i>
-              Teal
-            </span>
-
-            <span>
-              10.1%
-            </span>
-
-            <strong>
-              1,701–2,200
-            </strong>
-
+            <span><i class="reaction-teal">◈</i> Teal</span>
+            <span>10.1%</span>
+            <strong>1,701–2,200</strong>
           </div>
 
 
           <div>
-
-            <span>
-              <i class="reaction-green">◈</i>
-              Green
-            </span>
-
-            <span>
-              10.1%
-            </span>
-
-            <strong>
-              2,501–3,000
-            </strong>
-
+            <span><i class="reaction-green">◈</i> Green</span>
+            <span>10.1%</span>
+            <strong>2,501–3,000</strong>
           </div>
 
 
           <div>
-
-            <span>
-              <i class="reaction-yellow">◈</i>
-              Yellow
-            </span>
-
-            <span>
-              30.1%
-            </span>
-
-            <strong>
-              4,001–5,000
-            </strong>
-
+            <span><i class="reaction-yellow">◈</i> Yellow</span>
+            <span>30.1%</span>
+            <strong>4,001–5,000</strong>
           </div>
 
 
           <div>
-
-            <span>
-              <i class="reaction-orange">◈</i>
-              Orange
-            </span>
-
-            <span>
-              10.1%
-            </span>
-
-            <strong>
-              7,001–8,000
-            </strong>
-
+            <span><i class="reaction-orange">◈</i> Orange</span>
+            <span>10.1%</span>
+            <strong>7,001–8,000</strong>
           </div>
 
 
           <div>
-
-            <span>
-              <i class="reaction-red">◈</i>
-              Red
-            </span>
-
-            <span>
-              0.26%
-            </span>
-
-            <strong>
-              14,001–15,000
-            </strong>
-
+            <span><i class="reaction-red">◈</i> Red</span>
+            <span>0.26%</span>
+            <strong>14,001–15,000</strong>
           </div>
 
 
           <div>
-
-            <span>
-              <i class="reaction-rainbow">◈</i>
-              Rainbow
-            </span>
-
-            <span>
-              0.044%
-            </span>
-
-            <strong>
-              30,001–31,000
-            </strong>
-
+            <span><i class="reaction-rainbow">◈</i> Rainbow</span>
+            <span>0.044%</span>
+            <strong>30,001–31,000</strong>
           </div>
 
 
           <div>
-
-            <span>
-              <i class="reaction-white">◈</i>
-              White
-            </span>
-
-            <span>
-              4.4%
-            </span>
-
-            <strong>
-              3–4 random
-            </strong>
-
+            <span><i class="reaction-white">◈</i> White</span>
+            <span>4.4%</span>
+            <strong>3–4 random</strong>
           </div>
 
 
           <div>
-
-            <span>
-              <i class="reaction-black">◈</i>
-              Black
-            </span>
-
-            <span>
-              0.596%
-            </span>
-
-            <strong>
-              —
-            </strong>
-
+            <span><i class="reaction-black">◈</i> Black</span>
+            <span>0.596%</span>
+            <strong>—</strong>
           </div>
 
 
@@ -945,7 +885,7 @@
 
 
 
-      <section class="profile-panel key-panel">
+      <section class="profile-panel">
 
 
         <div class="profile-row">
@@ -990,34 +930,42 @@
       class="game-page"
     >
 
-      <section class="placeholder-page">
+
+      <section class="page-heading">
 
         <p class="overline">
           ARCHIVE
         </p>
 
         <h1>
-          Claimed Characters
+          Collection
         </h1>
 
-        <p>
-          Collection browsing will be built here.
-        </p>
-
       </section>
+
+
+      <div
+        id="collectionList"
+        class="character-list"
+      >
+      </div>
+
 
     </main>
 
 
 
+    <!-- ================================= -->
     <!-- WISHLIST -->
+    <!-- ================================= -->
 
     <main
       id="page-wishlist"
       class="game-page"
     >
 
-      <section class="placeholder-page">
+
+      <section class="page-heading">
 
         <p class="overline">
           DESIRES
@@ -1027,11 +975,72 @@
           Wishlist
         </h1>
 
-        <p>
-          Wishlist and Starwish management will be built here.
+
+        <p class="wishlist-counter">
+
+          <span id="wishlistUsed">
+            0
+          </span>
+
+          /
+
+          <span id="wishlistMaximum">
+            10
+          </span>
+
+          slots
+
         </p>
 
       </section>
+
+
+
+      <!-- CURRENT WISHES -->
+
+      <section class="wishlist-section">
+
+        <p class="section-caption">
+          CURRENT WISHES
+        </p>
+
+
+        <div
+          id="wishlistCurrent"
+          class="character-list"
+        >
+        </div>
+
+      </section>
+
+
+
+      <!-- SEARCH -->
+
+      <section class="wishlist-section">
+
+        <p class="section-caption">
+          FIND A CHARACTER
+        </p>
+
+
+        <input
+          id="wishlistSearch"
+          class="wishlist-search"
+          type="search"
+          placeholder="Search name or series..."
+          oninput="searchWishlistCharacters()"
+        >
+
+
+        <div
+          id="wishlistSearchResults"
+          class="character-list"
+        >
+        </div>
+
+      </section>
+
 
     </main>
 
@@ -1053,13 +1062,6 @@
         <h1>
           Infinite Tower
         </h1>
-
-        <p>
-          Current floor:
-          <strong id="towerDisplay">
-            1
-          </strong>
-        </p>
 
       </section>
 
@@ -1229,7 +1231,9 @@
 
 
 
+  <!-- ================================= -->
   <!-- SAVE MODAL -->
+  <!-- ================================= -->
 
   <div
     id="saveModal"
@@ -1243,7 +1247,7 @@
       </p>
 
       <h2 id="saveModalTitle">
-        Save One
+        Save 1
       </h2>
 
 
@@ -1273,8 +1277,9 @@
   </div>
 
 
-  <script src="data.js?v=20"></script>
-  <script src="app.js?v=20"></script>
+  <script src="data.js?v=30"></script>
+  <script src="app.js?v=30"></script>
+
 
 </body>
 
