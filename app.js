@@ -1,7 +1,7 @@
 /*
 ========================================================
 PRIVATE GACHA
-ROUNDS + WISHES + REACTIONS + BADGES
+STABLE MOBILE CORE
 ========================================================
 */
 
@@ -10,37 +10,36 @@ let player = null;
 
 let activeSaveSlot = null;
 
-let currentBatch = [];
-
 let selectedSaveSlot = null;
 
+let currentBatch = [];
+
+let currentCardIndex = 0;
+
+
+/*
+Manual mobile dragging variables.
+*/
+
+let dragActive = false;
+
+let dragStartX = 0;
+
+let dragStartScrollLeft = 0;
+
+let dragMoved = false;
+
 
 
 /*
 ========================================================
-GAME CONSTANTS
+REACTIONS
 ========================================================
 */
 
 
-/*
-You did not specify the chance that a CHARACTER
-spawns a reaction.
+const BASE_REACTION_CHANCE = 10;
 
-For now it is 10%.
-
-Change this one number later if you want.
-*/
-
-const BASE_REACTION_SPAWN_CHANCE = 10;
-
-
-/*
-Your reaction rarity percentages add to 100.2%.
-
-Rather than silently changing your numbers,
-we use them as relative WEIGHTS.
-*/
 
 const REACTION_TYPES = [
 
@@ -130,7 +129,7 @@ const REACTION_TYPES = [
 
 /*
 ========================================================
-BADGE DATA
+BADGES
 ========================================================
 */
 
@@ -165,14 +164,14 @@ const BADGES = {
         cost: 5000,
         effects: [
           "+3 Wishlist Slots",
-          "Unlocks Silver Badge"
+          "Unlock Silver Badge"
         ]
       },
 
       {
         cost: 12500,
         effects: [
-          "Unlocks Starwish Trading",
+          "Unlock Starwish Trading",
           "+1 Starwish Slot"
         ]
       },
@@ -181,7 +180,7 @@ const BADGES = {
         cost: 25000,
         effects: [
           "+5 Wishlist Slots",
-          "Claiming a Character earns its ◈ value"
+          "Claiming earns Character ◈ value"
         ]
       },
 
@@ -226,62 +225,62 @@ const BADGES = {
       {
         cost: 2500,
         effects: [
-          "+25% Wished Character chance"
+          "+25% Wish spawn chance"
         ]
       },
 
       {
         cost: 5000,
         effects: [
-          "+40% Wished Character chance"
+          "+40% Wish spawn chance"
         ]
       },
 
       {
         cost: 10000,
         effects: [
-          "+55% Wished Character chance",
-          "Unlocks Gold Badge"
+          "+55% Wish spawn chance",
+          "Unlock Gold Badge"
         ]
       },
 
       {
         cost: 25000,
         effects: [
-          "+120% additional Starwish chance",
-          "+80% Wished Character chance"
+          "+80% Wish spawn chance",
+          "+120% Starwish bonus"
         ]
       },
 
       {
         cost: 50000,
         effects: [
-          "+180% additional Starwish chance",
-          "+100% Wished Character chance"
+          "+100% Wish spawn chance",
+          "+180% Starwish bonus"
         ]
       },
 
       {
         cost: 150000,
         effects: [
-          "+100% additional Starwish chance",
-          "+50% Wished Character chance"
+          "+50% Wish spawn chance",
+          "+100% Starwish bonus"
         ]
       },
 
       {
         cost: 450000,
         effects: [
-          "+100% additional Starwish chance",
-          "+50% Wished Character chance"
+          "+50% Wish spawn chance",
+          "+100% Starwish bonus"
         ]
       },
 
       {
         cost: 1350000,
         effects: [
-          "+100% additional Starwish chance",
-          "+50% Wished Character chance"
+          "+50% Wish spawn chance",
+          "+100% Starwish bonus"
         ]
       }
 
@@ -320,8 +319,8 @@ const BADGES = {
         cost: 20000,
         effects: [
           "-10% Reaction Cost",
-          "+10% Reaction Power Cap",
-          "Unlocks Sapphire Badge"
+          "+10% Power Cap",
+          "Unlock Sapphire"
         ]
       },
 
@@ -329,7 +328,7 @@ const BADGES = {
         cost: 50000,
         effects: [
           "-10% Reaction Cost",
-          "+20% Reaction Power Cap"
+          "+20% Power Cap"
         ]
       },
 
@@ -337,28 +336,28 @@ const BADGES = {
         cost: 100000,
         effects: [
           "-20% Reaction Cost",
-          "Once per Round, the lowest eligible Reaction is upgraded"
+          "Upgrade the lowest eligible Reaction once per Round"
         ]
       },
 
       {
         cost: 300000,
         effects: [
-          "+10% Reaction Power Cap"
+          "+10% Power Cap"
         ]
       },
 
       {
         cost: 900000,
         effects: [
-          "+10% Reaction Power Cap"
+          "+10% Power Cap"
         ]
       },
 
       {
         cost: 2700000,
         effects: [
-          "+10% Reaction Power Cap"
+          "+10% Power Cap"
         ]
       }
 
@@ -397,7 +396,7 @@ const BADGES = {
         cost: 40000,
         effects: [
           "+5 Rolls per Round",
-          "Unlocks Ruby Badge"
+          "Unlock Ruby"
         ]
       },
 
@@ -472,7 +471,7 @@ const BADGES = {
         cost: 80000,
         effects: [
           "+1 Stored Claim Cap",
-          "Unlocks Emerald Badge"
+          "Unlock Emerald"
         ]
       },
 
@@ -531,30 +530,30 @@ const BADGES = {
       {
         cost: 40000,
         effects: [
-          "+2 Reaction Power regeneration per Round"
+          "+2 Power Regeneration"
         ]
       },
 
       {
         cost: 80000,
         effects: [
-          "+3 Reaction Power regeneration per Round"
+          "+3 Power Regeneration"
         ]
       },
 
       {
         cost: 160000,
         effects: [
-          "+3 Reaction Power regeneration per Round",
-          "+10% Reaction Power Cap",
-          "Unlocks Diamond Badge"
+          "+3 Power Regeneration",
+          "+10% Power Cap",
+          "Unlock Diamond"
         ]
       },
 
       {
         cost: 400000,
         effects: [
-          "+2 Reaction Power regeneration per Round",
+          "+2 Power Regeneration",
           "+50 ◈ every 5 Rounds"
         ]
       },
@@ -562,28 +561,28 @@ const BADGES = {
       {
         cost: 800000,
         effects: [
-          "+5 Reaction Power regeneration per Round"
+          "+5 Power Regeneration"
         ]
       },
 
       {
         cost: 2400000,
         effects: [
-          "+5 Reaction Power regeneration per Round"
+          "+5 Power Regeneration"
         ]
       },
 
       {
         cost: 7200000,
         effects: [
-          "+5 Reaction Power regeneration per Round"
+          "+5 Power Regeneration"
         ]
       },
 
       {
         cost: 21600000,
         effects: [
-          "+5 Reaction Power regeneration per Round"
+          "+5 Power Regeneration"
         ]
       }
 
@@ -607,38 +606,38 @@ const BADGES = {
       {
         cost: 80000,
         effects: [
-          "Unlocks Spheres",
-          "Claiming a Character gives +2 Sphere draws"
+          "Unlock Spheres",
+          "+2 Sphere draws when claiming"
         ]
       },
 
       {
         cost: 160000,
         effects: [
-          "Claiming a Character gives +3 Sphere draws"
+          "+3 Sphere draws when claiming"
         ]
       },
 
       {
         cost: 320000,
         effects: [
-          "Claiming a Character gives +5 Sphere draws",
-          "Unlocks Obsidian Badge"
+          "+5 Sphere draws when claiming",
+          "Unlock Obsidian"
         ]
       },
 
       {
         cost: 800000,
         effects: [
-          "Claiming a Wished Character gives +5 Sphere draws",
-          "Unlocks Rainbow Spheres"
+          "+5 Sphere draws when claiming a Wish",
+          "Unlock Rainbow Spheres"
         ]
       },
 
       {
         cost: 1600000,
         effects: [
-          "Claiming a Character gives +10 Sphere draws",
+          "+10 Sphere draws when claiming",
           "Blue Spheres become rarer"
         ]
       },
@@ -660,7 +659,7 @@ const BADGES = {
       {
         cost: 43200000,
         effects: [
-          "Blue Spheres are deactivated"
+          "Blue Spheres deactivated"
         ]
       }
 
@@ -684,56 +683,56 @@ const BADGES = {
       {
         cost: 160000,
         effects: [
-          "-200 :( entries from Rollpool"
+          "-200 :( entries"
         ]
       },
 
       {
         cost: 320000,
         effects: [
-          "-200 :( entries from Rollpool"
+          "-200 :( entries"
         ]
       },
 
       {
         cost: 640000,
         effects: [
-          "-200 :( entries from Rollpool"
+          "-200 :( entries"
         ]
       },
 
       {
         cost: 1600000,
         effects: [
-          "-200 :( entries from Rollpool"
+          "-200 :( entries"
         ]
       },
 
       {
         cost: 3200000,
         effects: [
-          "-200 :( entries from Rollpool"
+          "-200 :( entries"
         ]
       },
 
       {
         cost: 9600000,
         effects: [
-          "Removes +1 through +100 Currency rolls"
+          "Remove +1–100 Currency entries"
         ]
       },
 
       {
         cost: 28800000,
         effects: [
-          "Removes +101 through +200 Currency rolls"
+          "Remove +101–200 Currency entries"
         ]
       },
 
       {
         cost: 86400000,
         effects: [
-          "Removes +201 through +300 Currency rolls"
+          "Remove +201–300 Currency entries"
         ]
       }
 
@@ -747,14 +746,150 @@ const BADGES = {
 
 /*
 ========================================================
-SAVE
+NEW PLAYER
 ========================================================
 */
 
 
-function getSaveName(slot) {
+function makeNewPlayer() {
 
-  return "privateGachaSave_" + slot;
+  return {
+
+    currency: {
+
+      kakera: 0,
+
+      spheres: 0
+
+    },
+
+
+    rounds: {
+
+      current: 1,
+
+      rollsPerRound: 6,
+
+      currentBatch: []
+
+    },
+
+
+    claims: {
+
+      available: 1
+
+    },
+
+
+    storedClaims: {
+
+      current: 0,
+
+      maximum: 0
+
+    },
+
+
+    claimedCharacters: [],
+
+
+    wishlist: [],
+
+
+    starwishes: [],
+
+
+    keys: {},
+
+
+    badges: {
+
+      bronze: 0,
+
+      silver: 0,
+
+      gold: 0,
+
+      sapphire: 0,
+
+      ruby: 0,
+
+      emerald: 0,
+
+      diamond: 0,
+
+      obsidian: 0
+
+    },
+
+
+    reactionPower: {
+
+      current: 100,
+
+      maximum: 100
+
+    },
+
+
+    sphereInventory: {
+
+      blue: 0,
+
+      teal: 0,
+
+      green: 0,
+
+      yellow: 0,
+
+      orange: 0,
+
+      red: 0,
+
+      rainbow: 0
+
+    },
+
+
+    starwishTrading: {
+
+      trades: 0,
+
+      wishlistSlotsSpent: 0
+
+    },
+
+
+    statistics: {
+
+      totalRolls: 0,
+
+      totalClaims: 0,
+
+      totalCharactersSeen: 0,
+
+      totalCurrencyEarned: 0,
+
+      totalCurrencySpent: 0,
+
+      totalReactions: 0,
+
+      totalSphereDraws: 0
+
+    },
+
+
+    upgrades: {},
+
+
+    tower: {
+
+      currentFloor: 1
+
+    }
+
+  };
 
 }
 
@@ -762,12 +897,12 @@ function getSaveName(slot) {
 
 /*
 ========================================================
-PLAYER MIGRATION
+SAVE MIGRATION
 ========================================================
 */
 
 
-function ensurePlayerShape() {
+function repairPlayer() {
 
   if (!player) {
     return;
@@ -776,10 +911,7 @@ function ensurePlayerShape() {
 
   if (!player.currency) {
 
-    player.currency = {
-      kakera: 0,
-      spheres: 0
-    };
+    player.currency = {};
 
   }
 
@@ -804,52 +936,10 @@ function ensurePlayerShape() {
   }
 
 
-  if (!player.statistics) {
-
-    player.statistics = {};
-
-  }
-
-
-  const stats = {
-
-    totalRolls: 0,
-    totalClaims: 0,
-    totalCharactersSeen: 0,
-    totalCurrencyEarned: 0,
-    totalCurrencySpent: 0,
-    totalReactions: 0,
-    totalKeysEarned: 0,
-    totalSphereDraws: 0
-
-  };
-
-
-  for (
-    const key in stats
-  ) {
-
-    if (
-      typeof player.statistics[key]
-      !== "number"
-    ) {
-
-      player.statistics[key] =
-        stats[key];
-
-    }
-
-  }
-
-
 
   if (!player.rounds) {
 
-    player.rounds = {
-      current: 1,
-      rollsPerRound: 6,
-      currentBatch: []
-    };
+    player.rounds = {};
 
   }
 
@@ -878,27 +968,32 @@ function ensurePlayerShape() {
 
   if (!player.claims) {
 
-    player.claims = {
-      available: 1,
-      maximum: 1
-    };
+    player.claims = {};
 
   }
 
 
-  /*
-  We now START WITH A CLAIM.
+  if (
+    typeof player.claims.available
+    !== "number"
+  ) {
 
-  Old saves that were stuck at 0 on Round 1
-  get their starter claim restored.
-  */
+    player.claims.available = 1;
+
+  }
+
 
   if (
     player.rounds.current === 1
     &&
-    player.statistics.totalClaims === 0
-    &&
     player.claims.available === 0
+    &&
+    (
+      player.statistics?.totalClaims
+      ??
+      0
+    )
+    === 0
   ) {
 
     player.claims.available = 1;
@@ -909,10 +1004,27 @@ function ensurePlayerShape() {
 
   if (!player.storedClaims) {
 
-    player.storedClaims = {
-      current: 0,
-      maximum: 0
-    };
+    player.storedClaims = {};
+
+  }
+
+
+  if (
+    typeof player.storedClaims.current
+    !== "number"
+  ) {
+
+    player.storedClaims.current = 0;
+
+  }
+
+
+  if (
+    typeof player.storedClaims.maximum
+    !== "number"
+  ) {
+
+    player.storedClaims.maximum = 0;
 
   }
 
@@ -930,7 +1042,9 @@ function ensurePlayerShape() {
 
 
   if (
-    !Array.isArray(player.wishlist)
+    !Array.isArray(
+      player.wishlist
+    )
   ) {
 
     player.wishlist = [];
@@ -939,7 +1053,9 @@ function ensurePlayerShape() {
 
 
   if (
-    !Array.isArray(player.starwishes)
+    !Array.isArray(
+      player.starwishes
+    )
   ) {
 
     player.starwishes = [];
@@ -963,16 +1079,16 @@ function ensurePlayerShape() {
 
 
   for (
-    const badgeId
+    const id
     of Object.keys(BADGES)
   ) {
 
     if (
-      typeof player.badges[badgeId]
+      typeof player.badges[id]
       !== "number"
     ) {
 
-      player.badges[badgeId] = 0;
+      player.badges[id] = 0;
 
     }
 
@@ -980,22 +1096,9 @@ function ensurePlayerShape() {
 
 
 
-  if (!player.starwishTrading) {
-
-    player.starwishTrading = {
-      trades: 0
-    };
-
-  }
-
-
-
   if (!player.reactionPower) {
 
-    player.reactionPower = {
-      current: 100,
-      maximum: 100
-    };
+    player.reactionPower = {};
 
   }
 
@@ -1023,15 +1126,106 @@ function ensurePlayerShape() {
 
   if (!player.sphereInventory) {
 
-    player.sphereInventory = {
-      blue: 0,
-      teal: 0,
-      green: 0,
-      yellow: 0,
-      orange: 0,
-      red: 0,
-      rainbow: 0
-    };
+    player.sphereInventory = {};
+
+  }
+
+
+  for (
+    const color
+    of [
+      "blue",
+      "teal",
+      "green",
+      "yellow",
+      "orange",
+      "red",
+      "rainbow"
+    ]
+  ) {
+
+    if (
+      typeof player.sphereInventory[color]
+      !== "number"
+    ) {
+
+      player.sphereInventory[color] = 0;
+
+    }
+
+  }
+
+
+
+  if (!player.starwishTrading) {
+
+    player.starwishTrading = {};
+
+  }
+
+
+  if (
+    typeof player.starwishTrading.trades
+    !== "number"
+  ) {
+
+    player.starwishTrading.trades = 0;
+
+  }
+
+
+  if (
+    typeof player.starwishTrading
+      .wishlistSlotsSpent
+    !== "number"
+  ) {
+
+    player.starwishTrading
+      .wishlistSlotsSpent = 0;
+
+  }
+
+
+
+  if (!player.statistics) {
+
+    player.statistics = {};
+
+  }
+
+
+  const stats = [
+
+    "totalRolls",
+
+    "totalClaims",
+
+    "totalCharactersSeen",
+
+    "totalCurrencyEarned",
+
+    "totalCurrencySpent",
+
+    "totalReactions",
+
+    "totalSphereDraws"
+
+  ];
+
+
+  for (
+    const stat
+    of stats
+  ) {
+
+    if (
+      typeof player.statistics[stat]
+      !== "number"
+    ) {
+
+      player.statistics[stat] = 0;
+
+    }
 
   }
 
@@ -1039,15 +1233,6 @@ function ensurePlayerShape() {
   if (!player.upgrades) {
 
     player.upgrades = {};
-
-  }
-
-
-  if (!player.tower) {
-
-    player.tower = {
-      currentFloor: 1
-    };
 
   }
 
@@ -1060,19 +1245,15 @@ function ensurePlayerShape() {
 
 /*
 ========================================================
-CALCULATE ALL BADGE BONUSES
+BADGE BONUSES
 ========================================================
 */
 
 
 function recalculateBonuses() {
 
-  if (!player) {
-    return;
-  }
-
-
-  const b = player.badges;
+  const b =
+    player.badges;
 
 
   let wishlistSlots = 10;
@@ -1085,11 +1266,9 @@ function recalculateBonuses() {
 
   let starwishSpawnBonus = 0;
 
-  let claimValueReward = false;
-
   let reactionCost = 100;
 
-  let reactionMax = 100;
+  let reactionMaximum = 100;
 
   let reactionRegen = 1;
 
@@ -1099,7 +1278,9 @@ function recalculateBonuses() {
 
   let storedClaimCap = 0;
 
-  let currencyRollMultiplier = 1;
+  let rollCurrencyMultiplier = 1;
+
+  let claimValueReward = false;
 
   let goldReactionUpgrade = false;
 
@@ -1112,10 +1293,13 @@ function recalculateBonuses() {
 
 
   /*
-  BRONZE
+  Bronze
   */
 
-  if (b.bronze >= 1) wishlistSlots += 2;
+  if (b.bronze >= 1) {
+    wishlistSlots += 2;
+  }
+
 
   if (b.bronze >= 2) {
 
@@ -1125,9 +1309,16 @@ function recalculateBonuses() {
 
   }
 
-  if (b.bronze >= 3) wishlistSlots += 3;
 
-  if (b.bronze >= 4) starwishSlots += 1;
+  if (b.bronze >= 3) {
+    wishlistSlots += 3;
+  }
+
+
+  if (b.bronze >= 4) {
+    starwishSlots += 1;
+  }
+
 
   if (b.bronze >= 5) {
 
@@ -1137,23 +1328,41 @@ function recalculateBonuses() {
 
   }
 
-  if (b.bronze >= 6) wishlistSlots += 10;
 
-  if (b.bronze >= 7) wishlistSlots += 15;
+  if (b.bronze >= 6) {
+    wishlistSlots += 10;
+  }
 
-  if (b.bronze >= 8) wishlistSlots += 20;
+
+  if (b.bronze >= 7) {
+    wishlistSlots += 15;
+  }
+
+
+  if (b.bronze >= 8) {
+    wishlistSlots += 20;
+  }
 
 
 
   /*
-  SILVER
+  Silver
   */
 
-  if (b.silver >= 1) wishSpawnBonus += 25;
+  if (b.silver >= 1) {
+    wishSpawnBonus += 25;
+  }
 
-  if (b.silver >= 2) wishSpawnBonus += 40;
 
-  if (b.silver >= 3) wishSpawnBonus += 55;
+  if (b.silver >= 2) {
+    wishSpawnBonus += 40;
+  }
+
+
+  if (b.silver >= 3) {
+    wishSpawnBonus += 55;
+  }
+
 
   if (b.silver >= 4) {
 
@@ -1163,6 +1372,7 @@ function recalculateBonuses() {
 
   }
 
+
   if (b.silver >= 5) {
 
     wishSpawnBonus += 100;
@@ -1170,6 +1380,7 @@ function recalculateBonuses() {
     starwishSpawnBonus += 180;
 
   }
+
 
   if (b.silver >= 6) {
 
@@ -1179,6 +1390,7 @@ function recalculateBonuses() {
 
   }
 
+
   if (b.silver >= 7) {
 
     wishSpawnBonus += 50;
@@ -1186,6 +1398,7 @@ function recalculateBonuses() {
     starwishSpawnBonus += 100;
 
   }
+
 
   if (b.silver >= 8) {
 
@@ -1198,28 +1411,36 @@ function recalculateBonuses() {
 
 
   /*
-  GOLD
+  Gold
   */
 
-  if (b.gold >= 1) reactionCost -= 10;
+  if (b.gold >= 1) {
+    reactionCost -= 10;
+  }
 
-  if (b.gold >= 2) reactionCost -= 10;
+
+  if (b.gold >= 2) {
+    reactionCost -= 10;
+  }
+
 
   if (b.gold >= 3) {
 
     reactionCost -= 10;
 
-    reactionMax += 10;
+    reactionMaximum += 10;
 
   }
+
 
   if (b.gold >= 4) {
 
     reactionCost -= 10;
 
-    reactionMax += 20;
+    reactionMaximum += 20;
 
   }
+
 
   if (b.gold >= 5) {
 
@@ -1229,94 +1450,168 @@ function recalculateBonuses() {
 
   }
 
-  if (b.gold >= 6) reactionMax += 10;
 
-  if (b.gold >= 7) reactionMax += 10;
+  if (b.gold >= 6) {
+    reactionMaximum += 10;
+  }
 
-  if (b.gold >= 8) reactionMax += 10;
+
+  if (b.gold >= 7) {
+    reactionMaximum += 10;
+  }
+
+
+  if (b.gold >= 8) {
+    reactionMaximum += 10;
+  }
 
 
 
   /*
-  SAPPHIRE
+  Sapphire
   */
 
-  if (b.sapphire >= 1) rollsPerRound += 2;
+  if (b.sapphire >= 1) {
+    rollsPerRound += 2;
+  }
 
-  if (b.sapphire >= 2) rollsPerRound += 3;
 
-  if (b.sapphire >= 3) rollsPerRound += 5;
+  if (b.sapphire >= 2) {
+    rollsPerRound += 3;
+  }
 
-  if (b.sapphire >= 4) rollsPerRound += 8;
+
+  if (b.sapphire >= 3) {
+    rollsPerRound += 5;
+  }
+
+
+  if (b.sapphire >= 4) {
+    rollsPerRound += 8;
+  }
+
 
   if (b.sapphire >= 5) {
 
     rollsPerRound += 10;
 
-    currencyRollMultiplier = 2;
+    rollCurrencyMultiplier = 2;
 
   }
 
-  if (b.sapphire >= 6) rollsPerRound += 10;
 
-  if (b.sapphire >= 7) rollsPerRound += 10;
-
-  if (b.sapphire >= 8) rollsPerRound += 10;
-
+  if (b.sapphire >= 6) {
+    rollsPerRound += 10;
+  }
 
 
-  /*
-  RUBY
-  */
+  if (b.sapphire >= 7) {
+    rollsPerRound += 10;
+  }
 
-  if (b.ruby >= 1) claimInterval = 4;
 
-  if (b.ruby >= 2) storedClaimCap += 1;
-
-  if (b.ruby >= 3) storedClaimCap += 1;
-
-  if (b.ruby >= 4) claimInterval = 3;
-
-  if (b.ruby >= 5) storedClaimCap += 1;
-
-  if (b.ruby >= 6) storedClaimCap += 1;
-
-  if (b.ruby >= 7) storedClaimCap += 1;
-
-  if (b.ruby >= 8) storedClaimCap += 1;
+  if (b.sapphire >= 8) {
+    rollsPerRound += 10;
+  }
 
 
 
   /*
-  EMERALD
+  Ruby
   */
 
-  if (b.emerald >= 1) reactionRegen += 2;
+  if (b.ruby >= 1) {
+    claimInterval = 4;
+  }
 
-  if (b.emerald >= 2) reactionRegen += 3;
+
+  if (b.ruby >= 2) {
+    storedClaimCap += 1;
+  }
+
+
+  if (b.ruby >= 3) {
+    storedClaimCap += 1;
+  }
+
+
+  if (b.ruby >= 4) {
+    claimInterval = 3;
+  }
+
+
+  if (b.ruby >= 5) {
+    storedClaimCap += 1;
+  }
+
+
+  if (b.ruby >= 6) {
+    storedClaimCap += 1;
+  }
+
+
+  if (b.ruby >= 7) {
+    storedClaimCap += 1;
+  }
+
+
+  if (b.ruby >= 8) {
+    storedClaimCap += 1;
+  }
+
+
+
+  /*
+  Emerald
+  */
+
+  if (b.emerald >= 1) {
+    reactionRegen += 2;
+  }
+
+
+  if (b.emerald >= 2) {
+    reactionRegen += 3;
+  }
+
 
   if (b.emerald >= 3) {
 
     reactionRegen += 3;
 
-    reactionMax += 10;
+    reactionMaximum += 10;
 
   }
 
-  if (b.emerald >= 4) reactionRegen += 2;
 
-  if (b.emerald >= 5) reactionRegen += 5;
+  if (b.emerald >= 4) {
+    reactionRegen += 2;
+  }
 
-  if (b.emerald >= 6) reactionRegen += 5;
 
-  if (b.emerald >= 7) reactionRegen += 5;
+  if (b.emerald >= 5) {
+    reactionRegen += 5;
+  }
 
-  if (b.emerald >= 8) reactionRegen += 5;
+
+  if (b.emerald >= 6) {
+    reactionRegen += 5;
+  }
+
+
+  if (b.emerald >= 7) {
+    reactionRegen += 5;
+  }
+
+
+  if (b.emerald >= 8) {
+    reactionRegen += 5;
+  }
 
 
 
   /*
-  DIAMOND
+  Diamond
   */
 
   if (b.diamond >= 1) {
@@ -1327,52 +1622,76 @@ function recalculateBonuses() {
 
   }
 
-  if (b.diamond >= 2) sphereClaimDraws += 3;
 
-  if (b.diamond >= 3) sphereClaimDraws += 5;
+  if (b.diamond >= 2) {
+    sphereClaimDraws += 3;
+  }
 
-  if (b.diamond >= 4) wishedSphereBonus += 5;
 
-  if (b.diamond >= 5) sphereClaimDraws += 10;
+  if (b.diamond >= 3) {
+    sphereClaimDraws += 5;
+  }
+
+
+  if (b.diamond >= 4) {
+    wishedSphereBonus += 5;
+  }
+
+
+  if (b.diamond >= 5) {
+    sphereClaimDraws += 10;
+  }
+
+
+
+  /*
+  Starwish trades are permanent.
+  */
+
+  wishlistSlots -=
+    player.starwishTrading
+      .wishlistSlotsSpent;
+
+
+  starwishSlots +=
+    player.starwishTrading
+      .trades;
 
 
 
   player.upgrades = {
 
-    ...player.upgrades,
+    wishlistSlots:
+      Math.max(
+        0,
+        wishlistSlots
+      ),
 
-    wishlistSlots,
+    starwishSlots:
+      Math.max(
+        0,
+        starwishSlots
+      ),
 
-    starwishSlots,
-
-    wishValueBonus:
-      wishCurrencyBonus,
+    wishCurrencyBonus,
 
     wishSpawnBonus,
 
     starwishSpawnBonus,
 
-    claimValueReward,
-
-    reactionPowerCost:
+    reactionCost:
       Math.max(
         1,
         reactionCost
       ),
 
-    reactionRegeneration:
-      reactionRegen,
-
-    tenthKeyBonus:
-      10000,
-
-    additionalKeyChance:
-      player.upgrades.additionalKeyChance
-      ?? 0,
+    reactionRegen,
 
     claimInterval,
 
-    currencyRollMultiplier,
+    rollCurrencyMultiplier,
+
+    claimValueReward,
 
     goldReactionUpgrade,
 
@@ -1393,32 +1712,33 @@ function recalculateBonuses() {
     storedClaimCap;
 
 
-  if (
-    player.storedClaims.current
-    >
-    storedClaimCap
-  ) {
-
-    player.storedClaims.current =
-      storedClaimCap;
-
-  }
-
-
   player.reactionPower.maximum =
-    reactionMax;
+    reactionMaximum;
 
 
-  if (
-    player.reactionPower.current
-    >
-    reactionMax
-  ) {
+  player.reactionPower.current =
+    Math.min(
 
-    player.reactionPower.current =
-      reactionMax;
+      player.reactionPower.current,
 
-  }
+      player.reactionPower.maximum
+
+    );
+
+}
+
+
+
+/*
+========================================================
+SAVE FILE NAME
+========================================================
+*/
+
+
+function getSaveName(slot) {
+
+  return "privateGachaSave_" + slot;
 
 }
 
@@ -1450,11 +1770,8 @@ function loadSave(slot) {
 
     catch {
 
-      alert(
-        "This save could not be read."
-      );
-
-      return;
+      player =
+        makeNewPlayer();
 
     }
 
@@ -1463,15 +1780,16 @@ function loadSave(slot) {
   else {
 
     player =
-      createDefaultPlayer();
+      makeNewPlayer();
 
   }
 
 
-  activeSaveSlot = slot;
+  activeSaveSlot =
+    slot;
 
 
-  ensurePlayerShape();
+  repairPlayer();
 
 
   document
@@ -1485,19 +1803,20 @@ function loadSave(slot) {
 
 
   showPage(
+
     "rolls",
+
     document.querySelector(
       '[data-page="rolls"]'
     )
+
   );
 
 
   if (
-    Array.isArray(
-      player.rounds.currentBatch
-    )
-    &&
-    player.rounds.currentBatch.length > 0
+    player.rounds.currentBatch.length
+    >
+    0
   ) {
 
     currentBatch =
@@ -1507,14 +1826,14 @@ function loadSave(slot) {
 
   else {
 
-    generateRoundDeck();
+    generateRound();
 
   }
 
 
-  renderDeck();
+  renderRollDeck();
 
-  updateEverything();
+  updateAllDisplays();
 
   saveGame();
 
@@ -1548,10 +1867,6 @@ function saveGame(
     currentBatch;
 
 
-  player.lastSavedAt =
-    Date.now();
-
-
   localStorage.setItem(
 
     getSaveName(
@@ -1563,14 +1878,14 @@ function saveGame(
   );
 
 
-  updateSaveSlotInfo();
+  updateSaveCards();
 
 
   if (showMessage) {
 
     setText(
       "saveStatus",
-      "Collection saved."
+      "Saved."
     );
 
   }
@@ -1581,7 +1896,7 @@ function saveGame(
 
 /*
 ========================================================
-SAVE SCREEN
+SAVE SELECT
 ========================================================
 */
 
@@ -1601,13 +1916,13 @@ function showSaveScreen() {
     .classList.remove("hidden");
 
 
-  updateSaveSlotInfo();
+  updateSaveCards();
 
 }
 
 
 
-function updateSaveSlotInfo() {
+function updateSaveCards() {
 
   for (
     let slot = 1;
@@ -1623,13 +1938,21 @@ function updateSaveSlotInfo() {
 
     const title =
       document.getElementById(
-        "slot" + slot + "Title"
+        "slot"
+        +
+        slot
+        +
+        "Title"
       );
 
 
     const info =
       document.getElementById(
-        "slot" + slot + "Info"
+        "slot"
+        +
+        slot
+        +
+        "Info"
       );
 
 
@@ -1666,7 +1989,8 @@ function updateSaveSlotInfo() {
 
         formatNumber(
           save.rounds?.current
-          ?? 1
+          ??
+          1
         )
 
         +
@@ -1677,7 +2001,8 @@ function updateSaveSlotInfo() {
 
         formatNumber(
           save.claimedCharacters?.length
-          ?? 0
+          ??
+          0
         )
 
         +
@@ -1688,7 +2013,8 @@ function updateSaveSlotInfo() {
 
         formatNumber(
           save.currency?.kakera
-          ?? 0
+          ??
+          0
         )
 
         +
@@ -1704,7 +2030,7 @@ function updateSaveSlotInfo() {
 
 
       info.textContent =
-        "Unable to read";
+        "Tap to repair";
 
     }
 
@@ -1723,7 +2049,8 @@ SAVE OPTIONS
 
 function openSaveMenu(slot) {
 
-  selectedSaveSlot = slot;
+  selectedSaveSlot =
+    slot;
 
 
   setText(
@@ -1741,12 +2068,13 @@ function openSaveMenu(slot) {
 
 function closeSaveMenu() {
 
+  selectedSaveSlot =
+    null;
+
+
   document
     .getElementById("saveModal")
     .classList.add("hidden");
-
-
-  selectedSaveSlot = null;
 
 }
 
@@ -1766,11 +2094,7 @@ function overwriteSelectedSave() {
 
   if (
     !confirm(
-      "Overwrite Save "
-      +
-      selectedSaveSlot
-      +
-      "?"
+      "Overwrite this save?"
     )
   ) {
 
@@ -1792,7 +2116,7 @@ function overwriteSelectedSave() {
 
   closeSaveMenu();
 
-  updateSaveSlotInfo();
+  updateSaveCards();
 
 }
 
@@ -1814,7 +2138,7 @@ function resetSelectedSave() {
 
   if (
     !confirm(
-      "Permanently reset Save "
+      "Permanently erase Save "
       +
       slot
       +
@@ -1832,22 +2156,9 @@ function resetSelectedSave() {
   );
 
 
-  if (
-    activeSaveSlot === slot
-  ) {
-
-    player = null;
-
-    activeSaveSlot = null;
-
-    currentBatch = [];
-
-  }
-
-
   closeSaveMenu();
 
-  updateSaveSlotInfo();
+  updateSaveCards();
 
 }
 
@@ -1882,15 +2193,15 @@ function showPage(
     );
 
 
-  const page =
+  const target =
     document.getElementById(
       "page-" + pageName
     );
 
 
-  if (page) {
+  if (target) {
 
-    page.classList.add(
+    target.classList.add(
       "active-page"
     );
 
@@ -1927,7 +2238,22 @@ function showPage(
     pageName === "wishlist"
   ) {
 
-    renderWishlistPage();
+    renderWishlist();
+
+
+    const input =
+      document.getElementById(
+        "wishlistSearch"
+      );
+
+
+    if (input) {
+
+      searchWishlistCharacters(
+        input.value
+      );
+
+    }
 
   }
 
@@ -1964,17 +2290,12 @@ function showPage(
 
 /*
 ========================================================
-ROUND SYSTEM
+ROUND
 ========================================================
 */
 
 
 function startNextRound() {
-
-  if (!player) {
-    return;
-  }
-
 
   player.rounds.current += 1;
 
@@ -1982,63 +2303,70 @@ function startNextRound() {
   recalculateBonuses();
 
 
-  let notices = [];
+  const messages = [];
 
 
   /*
-  CLAIM REGENERATION
+  Claim regeneration.
   */
 
-  const interval =
-    player.upgrades.claimInterval;
-
-
   if (
+
     player.rounds.current
+
     %
-    interval
+
+    player.upgrades
+      .claimInterval
+
     ===
+
     0
+
   ) {
 
     regenerateClaim();
 
 
-    notices.push(
-      "+1 claim regenerated"
+    messages.push(
+      "+1 Claim"
     );
 
   }
 
 
   /*
-  EMERALD IV
-
-  +50 currency every 5 rounds.
+  Emerald IV.
   */
 
   if (
+
     player.badges.emerald >= 4
+
     &&
+
     player.rounds.current % 5 === 0
+
   ) {
 
-    player.currency.kakera += 50;
+    player.currency.kakera +=
+      50;
 
 
     player.statistics
-      .totalCurrencyEarned += 50;
+      .totalCurrencyEarned +=
+      50;
 
 
-    notices.push(
-      "+50 ◈ Emerald bonus"
+    messages.push(
+      "+50 ◈"
     );
 
   }
 
 
   /*
-  REACTION POWER REGEN
+  Reaction Power regeneration.
   */
 
   player.reactionPower.current =
@@ -2051,33 +2379,24 @@ function startNextRound() {
       +
 
       player.upgrades
-        .reactionRegeneration
+        .reactionRegen
 
     );
 
 
-  generateRoundDeck();
+  generateRound();
 
 
-  renderDeck();
+  renderRollDeck();
 
-  updateEverything();
+  updateAllDisplays();
 
   saveGame();
 
 
   showRoundNotice(
-    notices.join(" · ")
+    messages.join(" · ")
   );
-
-
-  const rail =
-    document.getElementById(
-      "rollRail"
-    );
-
-
-  rail.scrollLeft = 0;
 
 }
 
@@ -2085,16 +2404,12 @@ function startNextRound() {
 
 /*
 ========================================================
-CLAIM REGEN
+CLAIM REGENERATION
 ========================================================
 */
 
 
 function regenerateClaim() {
-
-  /*
-  One active claim.
-  */
 
   if (
     player.claims.available < 1
@@ -2107,16 +2422,14 @@ function regenerateClaim() {
   }
 
 
-  /*
-  Active claim already exists.
-
-  Store the extra if storage exists.
-  */
-
   if (
+
     player.storedClaims.current
+
     <
+
     player.storedClaims.maximum
+
   ) {
 
     player.storedClaims.current += 1;
@@ -2129,140 +2442,67 @@ function regenerateClaim() {
 
 /*
 ========================================================
-ROUND DECK
+ROLLPOOL
 ========================================================
 */
 
 
-function generateRoundDeck() {
-
-  currentBatch = [];
-
-
-  const rollCount =
-    player.rounds.rollsPerRound;
-
-
-  for (
-    let i = 0;
-    i < rollCount;
-    i++
-  ) {
-
-    const result =
-      getWeightedRollResult();
-
-
-    if (!result) {
-      continue;
-    }
-
-
-    const copy =
-      JSON.parse(
-        JSON.stringify(result)
-      );
-
-
-    /*
-    CHARACTER REACTION
-    */
-
-    if (
-      copy.type === "character"
-    ) {
-
-      player.statistics
-        .totalCharactersSeen += 1;
-
-
-      if (
-        Math.random() * 100
-        <
-        BASE_REACTION_SPAWN_CHANCE
-      ) {
-
-        copy.reaction =
-          createReaction();
-
-      }
-
-    }
-
-
-    /*
-    CURRENCY PLACEHOLDER RESULT
-    */
-
-    if (
-      copy.type === "currency"
-    ) {
-
-      const amount =
-        Number(copy.amount)
-        *
-        player.upgrades
-          .currencyRollMultiplier;
-
-
-      copy.finalAmount =
-        amount;
-
-
-      player.currency.kakera +=
-        amount;
-
-
-      player.statistics
-        .totalCurrencyEarned +=
-        amount;
-
-    }
-
-
-    currentBatch.push(copy);
-
-
-    player.statistics.totalRolls += 1;
-
-  }
-
-
-  /*
-  GOLD V:
-  upgrade the lowest eligible reaction.
-  */
+function getBaseRollPool() {
 
   if (
-    player.upgrades.goldReactionUpgrade
+    typeof rollDatabase
+    === "undefined"
+    ||
+    !Array.isArray(
+      rollDatabase
+    )
   ) {
 
-    upgradeLowestReaction();
+    return [];
 
   }
 
 
-  player.rounds.currentBatch =
-    currentBatch;
+  return rollDatabase;
 
 }
 
 
 
-/*
-========================================================
-EFFECTIVE ROLLPOOL
-========================================================
-*/
+function getCharacterEntries() {
+
+  return getBaseRollPool()
+    .filter(
+
+      function (entry) {
+
+        return (
+          entry
+          &&
+          entry.type
+          ===
+          "character"
+        );
+
+      }
+
+    );
+
+}
+
 
 
 function getEffectiveRollPool() {
+
+  const pool =
+    getBaseRollPool();
+
 
   const obsidian =
     player.badges.obsidian;
 
 
-  let emptyToRemove =
+  const emptyRemoval =
     Math.min(
       obsidian,
       5
@@ -2271,90 +2511,70 @@ function getEffectiveRollPool() {
     200;
 
 
-  let removedEmpty = 0;
+  let emptiesRemoved = 0;
 
 
-  return rollDatabase.filter(
+  return pool.filter(
 
     function (entry) {
 
 
-      /*
-      REMOVE :( ENTRIES
-      */
-
       if (
         entry.type === "empty"
         &&
-        removedEmpty < emptyToRemove
+        emptiesRemoved
+        <
+        emptyRemoval
       ) {
 
-        removedEmpty += 1;
+        emptiesRemoved += 1;
 
         return false;
 
       }
 
 
-      /*
-      OBSIDIAN VI
-
-      Remove +1 through +100.
-      */
-
       if (
-        obsidian >= 6
-        &&
         entry.type === "currency"
-        &&
-        entry.amount >= 1
-        &&
-        entry.amount <= 100
       ) {
 
-        return false;
+        if (
+          obsidian >= 6
+          &&
+          entry.amount >= 1
+          &&
+          entry.amount <= 100
+        ) {
 
-      }
+          return false;
 
-
-      /*
-      OBSIDIAN VII
-
-      Remove +101 through +200.
-      */
-
-      if (
-        obsidian >= 7
-        &&
-        entry.type === "currency"
-        &&
-        entry.amount >= 101
-        &&
-        entry.amount <= 200
-      ) {
-
-        return false;
-
-      }
+        }
 
 
-      /*
-      OBSIDIAN VIII
+        if (
+          obsidian >= 7
+          &&
+          entry.amount >= 101
+          &&
+          entry.amount <= 200
+        ) {
 
-      Remove +201 through +300.
-      */
+          return false;
 
-      if (
-        obsidian >= 8
-        &&
-        entry.type === "currency"
-        &&
-        entry.amount >= 201
-        &&
-        entry.amount <= 300
-      ) {
+        }
 
-        return false;
+
+        if (
+          obsidian >= 8
+          &&
+          entry.amount >= 201
+          &&
+          entry.amount <= 300
+        ) {
+
+          return false;
+
+        }
 
       }
 
@@ -2371,30 +2591,24 @@ function getEffectiveRollPool() {
 
 /*
 ========================================================
-WEIGHTED ROLLING
-========================================================
-
-Normal entry:
-weight 1
-
-Wished character:
-1 + Wish Bonus
-
-Starwish:
-Wish bonus
-+
-additional Starwish bonus
-
-This preserves equal base probability while
-allowing Silver upgrades to work.
+WEIGHTED ROLL
 ========================================================
 */
 
 
-function getWeightedRollResult() {
+function chooseRollResult() {
 
   const pool =
     getEffectiveRollPool();
+
+
+  if (
+    pool.length === 0
+  ) {
+
+    return null;
+
+  }
 
 
   let totalWeight = 0;
@@ -2419,8 +2633,11 @@ function getWeightedRollResult() {
           ) {
 
             weight *=
+
               1
+
               +
+
               (
                 player.upgrades
                   .wishSpawnBonus
@@ -2438,8 +2655,11 @@ function getWeightedRollResult() {
           ) {
 
             weight *=
+
               1
+
               +
+
               (
                 player.upgrades
                   .starwishSpawnBonus
@@ -2452,12 +2672,16 @@ function getWeightedRollResult() {
         }
 
 
-        totalWeight += weight;
+        totalWeight +=
+          weight;
 
 
         return {
+
           entry,
+
           weight
+
         };
 
       }
@@ -2465,7 +2689,7 @@ function getWeightedRollResult() {
     );
 
 
-  let random =
+  let number =
     Math.random()
     *
     totalWeight;
@@ -2476,11 +2700,12 @@ function getWeightedRollResult() {
     of weighted
   ) {
 
-    random -= item.weight;
+    number -=
+      item.weight;
 
 
     if (
-      random <= 0
+      number <= 0
     ) {
 
       return item.entry;
@@ -2500,12 +2725,176 @@ function getWeightedRollResult() {
 
 /*
 ========================================================
-REACTION CREATION
+GENERATE ROUND
 ========================================================
 */
 
 
-function createReaction() {
+function generateRound() {
+
+  currentBatch = [];
+
+
+  recalculateBonuses();
+
+
+  const rollCount =
+    player.rounds
+      .rollsPerRound;
+
+
+  for (
+    let i = 0;
+    i < rollCount;
+    i++
+  ) {
+
+    const original =
+      chooseRollResult();
+
+
+    if (!original) {
+      continue;
+    }
+
+
+    const result =
+      JSON.parse(
+        JSON.stringify(original)
+      );
+
+
+    /*
+    Character.
+    */
+
+    if (
+      result.type === "character"
+    ) {
+
+      player.statistics
+        .totalCharactersSeen += 1;
+
+
+      /*
+      Wish currency bonus.
+      */
+
+      if (
+        player.wishlist.includes(
+          result.id
+        )
+        &&
+        player.upgrades
+          .wishCurrencyBonus > 0
+      ) {
+
+        player.currency.kakera +=
+          player.upgrades
+            .wishCurrencyBonus;
+
+
+        player.statistics
+          .totalCurrencyEarned +=
+          player.upgrades
+            .wishCurrencyBonus;
+
+
+        result.wishBonus =
+          player.upgrades
+            .wishCurrencyBonus;
+
+      }
+
+
+      /*
+      Reaction.
+      */
+
+      if (
+        Math.random() * 100
+        <
+        BASE_REACTION_CHANCE
+      ) {
+
+        result.reaction =
+          makeReaction();
+
+      }
+
+    }
+
+
+    /*
+    Currency result.
+    */
+
+    if (
+      result.type === "currency"
+    ) {
+
+      result.finalAmount =
+
+        Number(
+          result.amount
+        )
+
+        *
+
+        player.upgrades
+          .rollCurrencyMultiplier;
+
+
+      player.currency.kakera +=
+        result.finalAmount;
+
+
+      player.statistics
+        .totalCurrencyEarned +=
+        result.finalAmount;
+
+    }
+
+
+    currentBatch.push(
+      result
+    );
+
+
+    player.statistics
+      .totalRolls += 1;
+
+  }
+
+
+  if (
+    player.upgrades
+      .goldReactionUpgrade
+  ) {
+
+    upgradeLowestReaction();
+
+  }
+
+
+  player.rounds.currentBatch =
+    currentBatch;
+
+
+  currentCardIndex = 0;
+
+}
+
+
+
+/*
+========================================================
+REACTIONS
+========================================================
+*/
+
+
+function makeReaction() {
 
   const type =
     weightedChoice(
@@ -2547,24 +2936,22 @@ function createReaction() {
 
 
 
-/*
-========================================================
-GOLD V REACTION UPGRADE
-========================================================
-*/
-
-
 function upgradeLowestReaction() {
 
   const order = [
+
     "blue",
+
     "teal",
+
     "green",
+
     "yellow"
+
   ];
 
 
-  const nextColor = {
+  const next = {
 
     blue: "teal",
 
@@ -2588,11 +2975,15 @@ function upgradeLowestReaction() {
         function (entry) {
 
           return (
+
             entry.reaction
+
             &&
+
             entry.reaction.type
             ===
             color
+
           );
 
         }
@@ -2602,7 +2993,7 @@ function upgradeLowestReaction() {
 
     if (result) {
 
-      const next =
+      const target =
         REACTION_TYPES.find(
 
           function (type) {
@@ -2610,7 +3001,7 @@ function upgradeLowestReaction() {
             return (
               type.id
               ===
-              nextColor[color]
+              next[color]
             );
 
           }
@@ -2620,14 +3011,14 @@ function upgradeLowestReaction() {
 
       result.reaction = {
 
-        type: next.id,
+        type: target.id,
 
-        name: next.name,
+        name: target.name,
 
         value:
           randomInteger(
-            next.min,
-            next.max
+            target.min,
+            target.max
           ),
 
         collected: false
@@ -2645,21 +3036,10 @@ function upgradeLowestReaction() {
 
 
 
-/*
-========================================================
-COLLECT REACTION
-========================================================
-*/
-
-
-function collectReaction(
-  batchIndex
-) {
+function collectReaction(index) {
 
   const result =
-    currentBatch[
-      batchIndex
-    ];
+    currentBatch[index];
 
 
   if (
@@ -2677,7 +3057,7 @@ function collectReaction(
 
   const cost =
     player.upgrades
-      .reactionPowerCost;
+      .reactionCost;
 
 
   if (
@@ -2699,23 +3079,18 @@ function collectReaction(
     cost;
 
 
-  let earned = 0;
-
-
   const reaction =
     result.reaction;
 
 
-  /*
-  WHITE:
-  3-4 random reactions.
-  */
+  let earned = 0;
+
 
   if (
     reaction.type === "white"
   ) {
 
-    const quantity =
+    const amount =
       randomInteger(
         3,
         4
@@ -2724,26 +3099,16 @@ function collectReaction(
 
     for (
       let i = 0;
-      i < quantity;
+      i < amount;
       i++
     ) {
 
-      const randomReaction =
-        createNonWhiteReaction();
-
-
       earned +=
-        randomReaction.value;
+        makeNormalReactionValue();
 
     }
 
   }
-
-
-  /*
-  BLACK:
-  currently worth no currency.
-  */
 
   else if (
     reaction.type === "black"
@@ -2752,7 +3117,6 @@ function collectReaction(
     earned = 0;
 
   }
-
 
   else {
 
@@ -2778,9 +3142,9 @@ function collectReaction(
   reaction.collected = true;
 
 
-  renderDeck();
+  renderRollDeck();
 
-  updateEverything();
+  updateAllDisplays();
 
   saveGame();
 
@@ -2788,14 +3152,7 @@ function collectReaction(
 
 
 
-/*
-========================================================
-NON-WHITE REACTION FOR WHITE RESULT
-========================================================
-*/
-
-
-function createNonWhiteReaction() {
+function makeNormalReactionValue() {
 
   const options =
     REACTION_TYPES.filter(
@@ -2814,22 +3171,15 @@ function createNonWhiteReaction() {
 
 
   const type =
-    weightedChoice(options);
+    weightedChoice(
+      options
+    );
 
 
-  return {
-
-    type: type.id,
-
-    name: type.name,
-
-    value:
-      randomInteger(
-        type.min,
-        type.max
-      )
-
-  };
+  return randomInteger(
+    type.min,
+    type.max
+  );
 
 }
 
@@ -2837,12 +3187,12 @@ function createNonWhiteReaction() {
 
 /*
 ========================================================
-RENDER DECK
+RENDER ROLLS
 ========================================================
 */
 
 
-function renderDeck() {
+function renderRollDeck() {
 
   const rail =
     document.getElementById(
@@ -2894,24 +3244,452 @@ function renderDeck() {
       }
 
 
-      rail.appendChild(card);
+      rail.appendChild(
+        card
+      );
 
     }
 
   );
 
 
-  rail.addEventListener(
-    "scroll",
-    updateCardPosition,
-    {
-      passive: true
+  setupDeckDragging();
+
+
+  setTimeout(
+
+    function () {
+
+      goToCard(
+        currentCardIndex,
+        false
+      );
+
+    },
+
+    50
+
+  );
+
+}
+
+
+
+/*
+========================================================
+MANUAL MOBILE SWIPE
+========================================================
+*/
+
+
+function setupDeckDragging() {
+
+  const rail =
+    document.getElementById(
+      "rollRail"
+    );
+
+
+  /*
+  Remove old handlers by replacing with
+  direct property handlers.
+  */
+
+  rail.ontouchstart =
+    function (event) {
+
+      if (
+        event.touches.length !== 1
+      ) {
+
+        return;
+
+      }
+
+
+      dragActive = true;
+
+      dragMoved = false;
+
+
+      dragStartX =
+        event.touches[0]
+          .clientX;
+
+
+      dragStartScrollLeft =
+        rail.scrollLeft;
+
+
+      rail.classList.add(
+        "dragging"
+      );
+
+    };
+
+
+  rail.ontouchmove =
+    function (event) {
+
+      if (!dragActive) {
+        return;
+      }
+
+
+      const currentX =
+        event.touches[0]
+          .clientX;
+
+
+      const distance =
+        currentX
+        -
+        dragStartX;
+
+
+      if (
+        Math.abs(distance) > 5
+      ) {
+
+        dragMoved = true;
+
+      }
+
+
+      /*
+      Only hijack clear horizontal movement.
+      */
+
+      if (
+        Math.abs(distance) > 8
+      ) {
+
+        rail.scrollLeft =
+
+          dragStartScrollLeft
+
+          -
+
+          distance;
+
+
+        event.preventDefault();
+
+      }
+
+    };
+
+
+  rail.ontouchend =
+    function (event) {
+
+      if (!dragActive) {
+        return;
+      }
+
+
+      const endX =
+        event.changedTouches[0]
+          .clientX;
+
+
+      const distance =
+        endX
+        -
+        dragStartX;
+
+
+      dragActive = false;
+
+
+      rail.classList.remove(
+        "dragging"
+      );
+
+
+      if (
+        Math.abs(distance) > 45
+      ) {
+
+        if (
+          distance < 0
+        ) {
+
+          currentCardIndex += 1;
+
+        }
+
+        else {
+
+          currentCardIndex -= 1;
+
+        }
+
+      }
+
+
+      currentCardIndex =
+        clamp(
+
+          currentCardIndex,
+
+          0,
+
+          currentBatch.length - 1
+
+        );
+
+
+      goToCard(
+        currentCardIndex,
+        true
+      );
+
+    };
+
+
+  /*
+  Normal scroll also keeps counter synced.
+  */
+
+  rail.onscroll =
+    function () {
+
+      updateCardIndexFromScroll();
+
+    };
+
+}
+
+
+
+/*
+========================================================
+CARD NAVIGATION
+========================================================
+*/
+
+
+function moveCard(direction) {
+
+  currentCardIndex +=
+    direction;
+
+
+  currentCardIndex =
+    clamp(
+
+      currentCardIndex,
+
+      0,
+
+      currentBatch.length - 1
+
+    );
+
+
+  goToCard(
+    currentCardIndex,
+    true
+  );
+
+}
+
+
+
+function goToCard(
+  index,
+  smooth = true
+) {
+
+  const rail =
+    document.getElementById(
+      "rollRail"
+    );
+
+
+  const cards =
+    rail.querySelectorAll(
+      ".roll-card"
+    );
+
+
+  if (
+    cards.length === 0
+  ) {
+
+    return;
+
+  }
+
+
+  const card =
+    cards[index];
+
+
+  if (!card) {
+    return;
+  }
+
+
+  /*
+  Center card manually.
+  */
+
+  const target =
+
+    card.offsetLeft
+
+    -
+
+    (
+      rail.clientWidth
+      -
+      card.offsetWidth
+    )
+    /
+    2;
+
+
+  rail.scrollTo({
+
+    left:
+      Math.max(
+        0,
+        target
+      ),
+
+    behavior:
+      smooth
+      ?
+      "smooth"
+      :
+      "auto"
+
+  });
+
+
+  setText(
+
+    "cardPosition",
+
+    (index + 1)
+
+    +
+
+    " / "
+
+    +
+
+    cards.length
+
+  );
+
+}
+
+
+
+function updateCardIndexFromScroll() {
+
+  if (dragActive) {
+    return;
+  }
+
+
+  const rail =
+    document.getElementById(
+      "rollRail"
+    );
+
+
+  const cards =
+    rail.querySelectorAll(
+      ".roll-card"
+    );
+
+
+  if (
+    cards.length === 0
+  ) {
+
+    return;
+
+  }
+
+
+  const center =
+
+    rail.scrollLeft
+
+    +
+
+    rail.clientWidth / 2;
+
+
+  let bestIndex = 0;
+
+  let bestDistance =
+    Infinity;
+
+
+  cards.forEach(
+
+    function (
+      card,
+      index
+    ) {
+
+      const cardCenter =
+
+        card.offsetLeft
+
+        +
+
+        card.offsetWidth / 2;
+
+
+      const distance =
+        Math.abs(
+          cardCenter - center
+        );
+
+
+      if (
+        distance < bestDistance
+      ) {
+
+        bestDistance =
+          distance;
+
+
+        bestIndex =
+          index;
+
+      }
+
     }
+
   );
 
 
-  requestAnimationFrame(
-    updateCardPosition
+  currentCardIndex =
+    bestIndex;
+
+
+  setText(
+
+    "cardPosition",
+
+    (bestIndex + 1)
+
+    +
+
+    " / "
+
+    +
+
+    cards.length
+
   );
 
 }
@@ -2936,6 +3714,10 @@ function buildCharacterCard(
     );
 
 
+  card.className =
+    "roll-card";
+
+
   const owned =
     player.claimedCharacters.includes(
       character.id
@@ -2954,17 +3736,6 @@ function buildCharacterCard(
     );
 
 
-  const keys =
-    player.keys[
-      character.id
-    ]
-    ?? 0;
-
-
-  card.className =
-    "roll-card";
-
-
   if (wished) {
 
     card.classList.add(
@@ -2980,6 +3751,7 @@ function buildCharacterCard(
       "wished"
     );
 
+
     card.classList.add(
       "starwished"
     );
@@ -2987,15 +3759,28 @@ function buildCharacterCard(
   }
 
 
-  const reactionHtml =
+  const keys =
+    player.keys[
+      character.id
+    ]
+    ??
+    0;
+
+
+  let reactionHtml = "";
+
+
+  if (
     character.reaction
-    ?
-    buildReactionHtml(
-      character.reaction,
-      batchIndex
-    )
-    :
-    "";
+  ) {
+
+    reactionHtml =
+      buildReactionHtml(
+        character.reaction,
+        batchIndex
+      );
+
+  }
 
 
   card.innerHTML = `
@@ -3036,7 +3821,6 @@ function buildCharacterCard(
     </div>
 
 
-
     <div class="card-art">
 
       ${
@@ -3046,8 +3830,9 @@ function buildCharacterCard(
 
         `
         <img
-          src="${escapeHtml(character.image)}"
-          alt="${escapeHtml(character.name)}"
+          src="${escapeAttribute(character.image)}"
+          alt="${escapeAttribute(character.name)}"
+          draggable="false"
           onerror="this.style.display='none'"
         >
         `
@@ -3072,7 +3857,7 @@ function buildCharacterCard(
         </span>
 
         <span>
-          ${getDisplayedCharacterChance(character)}%
+          ${getCharacterChance(character)}%
         </span>
 
       </div>
@@ -3082,21 +3867,29 @@ function buildCharacterCard(
 
         <button
           class="claim-button"
-          onclick="claimCharacter('${escapeHtml(character.id)}')"
+          onclick="claimCharacter('${escapeAttribute(character.id)}')"
           ${owned ? "disabled" : ""}
         >
 
           ${
             owned
+
             ?
+
             "OWNED"
+
             :
+
             (
               player.claims.available > 0
+
               ?
+
               "CLAIM"
+
               :
-              "NO CLAIMS"
+
+              "NO CLAIM"
             )
           }
 
@@ -3105,7 +3898,7 @@ function buildCharacterCard(
 
         <button
           class="wish-button ${wished ? "active" : ""}"
-          onclick="toggleWishlist('${escapeHtml(character.id)}')"
+          onclick="toggleWishlist('${escapeAttribute(character.id)}')"
         >
 
           ${
@@ -3133,7 +3926,7 @@ function buildCharacterCard(
 
 /*
 ========================================================
-REACTION HTML
+REACTION CARD SECTION
 ========================================================
 */
 
@@ -3143,20 +3936,14 @@ function buildReactionHtml(
   batchIndex
 ) {
 
-  const cssClass =
-    "reaction-"
-    +
-    reaction.type;
-
-
-  let displayValue;
+  let valueText;
 
 
   if (
     reaction.type === "white"
   ) {
 
-    displayValue =
+    valueText =
       "3–4 random";
 
   }
@@ -3165,14 +3952,14 @@ function buildReactionHtml(
     reaction.type === "black"
   ) {
 
-    displayValue =
-      "Black";
+    valueText =
+      "Black Reaction";
 
   }
 
   else {
 
-    displayValue =
+    valueText =
       formatNumber(
         reaction.value
       )
@@ -3188,18 +3975,23 @@ function buildReactionHtml(
 
       <div class="reaction-left">
 
-        <i class="reaction-gem ${cssClass}">
+        <i
+          class="
+            reaction-gem
+            reaction-${reaction.type}
+          "
+        >
           ◈
         </i>
 
         <div>
 
           <span class="reaction-name">
-            ${reaction.name} Reaction
+            ${reaction.name}
           </span>
 
           <span class="reaction-value">
-            ${displayValue}
+            ${valueText}
           </span>
 
         </div>
@@ -3209,10 +4001,14 @@ function buildReactionHtml(
 
       <button
         class="reaction-collect"
-
         onclick="collectReaction(${batchIndex})"
-
-        ${reaction.collected ? "disabled" : ""}
+        ${
+          reaction.collected
+          ?
+          "disabled"
+          :
+          ""
+        }
       >
 
         ${
@@ -3287,7 +4083,7 @@ function buildCurrencyCard(
         </span>
 
         <span>
-          ${getCurrencyProbability(result)}%
+          ${getCurrencyChance(result)}%
         </span>
 
       </div>
@@ -3343,7 +4139,7 @@ function buildEmptyCard() {
         <span></span>
 
         <span>
-          ${getEmptyProbability()}%
+          ${getEmptyChance()}%
         </span>
 
       </div>
@@ -3361,7 +4157,7 @@ function buildEmptyCard() {
 
 /*
 ========================================================
-CLAIM CHARACTER
+CLAIM
 ========================================================
 */
 
@@ -3371,20 +4167,9 @@ function claimCharacter(
 ) {
 
   const character =
-    getCharacterEntries()
-      .find(
-
-        function (item) {
-
-          return (
-            item.id
-            ===
-            characterId
-          );
-
-        }
-
-      );
+    findCharacter(
+      characterId
+    );
 
 
   if (!character) {
@@ -3408,7 +4193,7 @@ function claimCharacter(
   ) {
 
     alert(
-      "No claims available."
+      "No claim available."
     );
 
     return;
@@ -3416,7 +4201,7 @@ function claimCharacter(
   }
 
 
-  const wasWished =
+  const wished =
     player.wishlist.includes(
       characterId
     );
@@ -3431,9 +4216,7 @@ function claimCharacter(
 
 
   /*
-  If stored claims exist,
-  automatically move one into
-  the active claim position.
+  Bring one stored claim forward.
   */
 
   if (
@@ -3442,20 +4225,23 @@ function claimCharacter(
 
     player.storedClaims.current -= 1;
 
+
     player.claims.available = 1;
 
   }
 
 
-  player.statistics.totalClaims += 1;
+  player.statistics
+    .totalClaims += 1;
 
 
   /*
-  BRONZE V
+  Bronze V.
   */
 
   if (
-    player.upgrades.claimValueReward
+    player.upgrades
+      .claimValueReward
   ) {
 
     player.currency.kakera +=
@@ -3470,7 +4256,7 @@ function claimCharacter(
 
 
   /*
-  DIAMOND SPHERES
+  Diamond Spheres.
   */
 
   let sphereDraws =
@@ -3478,9 +4264,7 @@ function claimCharacter(
       .sphereClaimDraws;
 
 
-  if (
-    wasWished
-  ) {
+  if (wished) {
 
     sphereDraws +=
       player.upgrades
@@ -3493,18 +4277,18 @@ function claimCharacter(
     sphereDraws > 0
   ) {
 
-    awardSphereDraws(
+    awardSpheres(
       sphereDraws
     );
 
   }
 
 
-  renderDeck();
+  renderRollDeck();
 
   renderCollection();
 
-  updateEverything();
+  updateAllDisplays();
 
   saveGame();
 
@@ -3530,7 +4314,7 @@ function toggleWishlist(
 
 
   if (
-    index !== -1
+    index >= 0
   ) {
 
     player.wishlist.splice(
@@ -3539,11 +4323,6 @@ function toggleWishlist(
     );
 
 
-    /*
-    Starwish requires Wishlist,
-    so removing Wish removes Starwish too.
-    */
-
     const starIndex =
       player.starwishes.indexOf(
         characterId
@@ -3551,7 +4330,7 @@ function toggleWishlist(
 
 
     if (
-      starIndex !== -1
+      starIndex >= 0
     ) {
 
       player.starwishes.splice(
@@ -3566,14 +4345,18 @@ function toggleWishlist(
   else {
 
     if (
+
       player.wishlist.length
+
       >=
+
       player.upgrades
         .wishlistSlots
+
     ) {
 
       alert(
-        "Your wishlist is full."
+        "Wishlist is full."
       );
 
       return;
@@ -3588,13 +4371,13 @@ function toggleWishlist(
   }
 
 
-  renderDeck();
+  renderRollDeck();
 
-  renderWishlistPage();
+  renderWishlist();
 
   renderCollection();
 
-  updateEverything();
+  updateAllDisplays();
 
   saveGame();
 
@@ -3620,7 +4403,7 @@ function toggleStarwish(
   ) {
 
     alert(
-      "A character must be Wished before it can be Starwished."
+      "Wish the character first."
     );
 
     return;
@@ -3635,7 +4418,7 @@ function toggleStarwish(
 
 
   if (
-    index !== -1
+    index >= 0
   ) {
 
     player.starwishes.splice(
@@ -3648,14 +4431,18 @@ function toggleStarwish(
   else {
 
     if (
+
       player.starwishes.length
+
       >=
+
       player.upgrades
         .starwishSlots
+
     ) {
 
       alert(
-        "You have no open Starwish slots."
+        "No Starwish slot available."
       );
 
       return;
@@ -3670,9 +4457,9 @@ function toggleStarwish(
   }
 
 
-  renderDeck();
+  renderRollDeck();
 
-  renderWishlistPage();
+  renderWishlist();
 
   saveGame();
 
@@ -3684,21 +4471,10 @@ function toggleStarwish(
 ========================================================
 STARWISH TRADING
 ========================================================
-
-Bronze IV unlocks this.
-
-Trade 1 costs 1 Wishlist slot.
-Trade 2 costs 2 Wishlist slots.
-Trade 3 costs 3 Wishlist slots.
-etc.
-
-This permanently converts those Wishlist
-slots into +1 Starwish slot.
-========================================================
 */
 
 
-function tradeWishlistSlotsForStarwish() {
+function tradeForStarwishSlot() {
 
   if (
     player.badges.bronze < 4
@@ -3716,16 +4492,22 @@ function tradeWishlistSlotsForStarwish() {
     1;
 
 
-  if (
-    player.upgrades.wishlistSlots
+  const unusedWishlistSlots =
+
+    player.upgrades
+      .wishlistSlots
+
     -
-    cost
-    <
-    player.wishlist.length
+
+    player.wishlist.length;
+
+
+  if (
+    unusedWishlistSlots < cost
   ) {
 
     alert(
-      "You need enough unused Wishlist slots to make this trade."
+      "Not enough unused Wishlist slots."
     );
 
     return;
@@ -3733,43 +4515,20 @@ function tradeWishlistSlotsForStarwish() {
   }
 
 
-  /*
-  Store permanent conversion separately.
-  */
-
-  if (
-    typeof player.starwishTrading
-      .wishlistSlotsSpent
-    !== "number"
-  ) {
-
-    player.starwishTrading
-      .wishlistSlotsSpent = 0;
-
-  }
-
-
-  player.starwishTrading
-    .wishlistSlotsSpent += cost;
-
-
   player.starwishTrading
     .trades += 1;
 
 
+  player.starwishTrading
+    .wishlistSlotsSpent +=
+    cost;
+
+
   recalculateBonuses();
 
+  renderWishlist();
 
-  /*
-  Apply converted slots after badge bonuses.
-  */
-
-  applyStarwishTrades();
-
-
-  renderWishlistPage();
-
-  updateEverything();
+  updateAllDisplays();
 
   saveGame();
 
@@ -3779,46 +4538,12 @@ function tradeWishlistSlotsForStarwish() {
 
 /*
 ========================================================
-APPLY STARWISH TRADES
+WISHLIST DISPLAY
 ========================================================
 */
 
 
-function applyStarwishTrades() {
-
-  const spent =
-    player.starwishTrading
-      .wishlistSlotsSpent
-    ??
-    0;
-
-
-  const trades =
-    player.starwishTrading
-      .trades
-    ??
-    0;
-
-
-  player.upgrades.wishlistSlots -=
-    spent;
-
-
-  player.upgrades.starwishSlots +=
-    trades;
-
-}
-
-
-
-/*
-========================================================
-WISHLIST SCREEN
-========================================================
-*/
-
-
-function renderWishlistPage() {
+function renderWishlist() {
 
   if (!player) {
     return;
@@ -3826,8 +4551,6 @@ function renderWishlistPage() {
 
 
   recalculateBonuses();
-
-  applyStarwishTrades();
 
 
   setText(
@@ -3837,7 +4560,7 @@ function renderWishlistPage() {
 
 
   setText(
-    "wishlistMaximum",
+    "wishlistMax",
     player.upgrades
       .wishlistSlots
   );
@@ -3850,15 +4573,19 @@ function renderWishlistPage() {
 
 
   setText(
-    "starwishMaximum",
+    "starwishMax",
     player.upgrades
       .starwishSlots
   );
 
 
-  const tradePanel =
+  /*
+  Trading panel.
+  */
+
+  const panel =
     document.getElementById(
-      "starwishTradingPanel"
+      "starwishTradePanel"
     );
 
 
@@ -3866,12 +4593,12 @@ function renderWishlistPage() {
     player.badges.bronze >= 4
   ) {
 
-    tradePanel.classList.remove(
+    panel.classList.remove(
       "hidden"
     );
 
 
-    const nextCost =
+    const cost =
       player.starwishTrading
         .trades
       +
@@ -3883,19 +4610,27 @@ function renderWishlistPage() {
       "starwishTradeText",
 
       "Next trade: "
+
       +
-      nextCost
+
+      cost
+
       +
+
       " Wishlist slot"
+
       +
+
       (
-        nextCost === 1
+        cost === 1
         ?
         ""
         :
         "s"
       )
+
       +
+
       " → +1 Starwish slot"
 
     );
@@ -3904,28 +4639,31 @@ function renderWishlistPage() {
 
   else {
 
-    tradePanel.classList.add(
+    panel.classList.add(
       "hidden"
     );
 
   }
 
 
+  /*
+  Current wishes.
+  */
 
-  const current =
+  const list =
     document.getElementById(
       "wishlistCurrent"
     );
 
 
-  current.innerHTML = "";
+  list.innerHTML = "";
 
 
   if (
     player.wishlist.length === 0
   ) {
 
-    current.innerHTML = `
+    list.innerHTML = `
 
       <div class="empty-list">
         Your wishlist is empty.
@@ -3937,34 +4675,30 @@ function renderWishlistPage() {
 
   else {
 
-    player.wishlist.forEach(
+    for (
+      const id
+      of player.wishlist
+    ) {
 
-      function (id) {
-
-        const character =
-          findCharacterById(id);
+      const character =
+        findCharacter(id);
 
 
-        if (character) {
+      if (character) {
 
-          current.appendChild(
+        list.appendChild(
 
-            buildCharacterListItem(
-              character
-            )
+          buildCharacterRow(
+            character
+          )
 
-          );
-
-        }
+        );
 
       }
 
-    );
+    }
 
   }
-
-
-  searchWishlistCharacters();
 
 }
 
@@ -3972,60 +4706,14 @@ function renderWishlistPage() {
 
 /*
 ========================================================
-FIXED SEARCH
+SEARCH
 ========================================================
 */
 
 
-function setupWishlistSearch() {
-
-  const input =
-    document.getElementById(
-      "wishlistSearch"
-    );
-
-
-  if (!input) {
-    return;
-  }
-
-
-  input.addEventListener(
-
-    "input",
-
-    function () {
-
-      searchWishlistCharacters();
-
-    }
-
-  );
-
-
-  input.addEventListener(
-
-    "keyup",
-
-    function () {
-
-      searchWishlistCharacters();
-
-    }
-
-  );
-
-}
-
-
-
-function searchWishlistCharacters() {
-
-  const input =
-    document.getElementById(
-      "wishlistSearch"
-    );
-
+function searchWishlistCharacters(
+  rawQuery
+) {
 
   const results =
     document.getElementById(
@@ -4033,10 +4721,16 @@ function searchWishlistCharacters() {
     );
 
 
+  const status =
+    document.getElementById(
+      "searchStatus"
+    );
+
+
   if (
-    !input
-    ||
     !results
+    ||
+    !status
   ) {
 
     return;
@@ -4045,9 +4739,13 @@ function searchWishlistCharacters() {
 
 
   const query =
-    input.value
-      .trim()
-      .toLowerCase();
+    String(
+      rawQuery
+      ??
+      ""
+    )
+    .trim()
+    .toLowerCase();
 
 
   results.innerHTML = "";
@@ -4057,13 +4755,8 @@ function searchWishlistCharacters() {
     query.length < 2
   ) {
 
-    results.innerHTML = `
-
-      <div class="empty-list">
-        Type at least 2 letters to search.
-      </div>
-
-    `;
+    status.textContent =
+      "Type at least 2 letters.";
 
 
     return;
@@ -4071,51 +4764,79 @@ function searchWishlistCharacters() {
   }
 
 
-  /*
-  IMPORTANT FIX:
-
-  We search characters directly from
-  rollDatabase instead of depending on
-  characterDatabase.
-  */
-
   const characters =
     getCharacterEntries();
 
 
+  if (
+    characters.length === 0
+  ) {
+
+    status.textContent =
+      "No character entries were found in data.js.";
+
+
+    return;
+
+  }
+
+
   const matches =
     characters
-
       .filter(
 
         function (character) {
 
-          return (
-
+          const name =
             String(
               character.name
+              ??
+              ""
             )
-            .toLowerCase()
-            .includes(query)
+            .toLowerCase();
+
+
+          const series =
+            String(
+              character.series
+              ??
+              ""
+            )
+            .toLowerCase();
+
+
+          return (
+
+            name.includes(query)
 
             ||
 
-            String(
-              character.series
-            )
-            .toLowerCase()
-            .includes(query)
+            series.includes(query)
 
           );
 
         }
 
       )
-
       .slice(
         0,
-        40
+        50
       );
+
+
+  status.textContent =
+
+    matches.length
+
+    +
+
+    (
+      matches.length === 1
+      ?
+      " result"
+      :
+      " results"
+    );
 
 
   if (
@@ -4125,7 +4846,7 @@ function searchWishlistCharacters() {
     results.innerHTML = `
 
       <div class="empty-list">
-        No characters found.
+        No matching character.
       </div>
 
     `;
@@ -4136,21 +4857,20 @@ function searchWishlistCharacters() {
   }
 
 
-  matches.forEach(
+  for (
+    const character
+    of matches
+  ) {
 
-    function (character) {
+    results.appendChild(
 
-      results.appendChild(
+      buildCharacterRow(
+        character
+      )
 
-        buildCharacterListItem(
-          character
-        )
+    );
 
-      );
-
-    }
-
-  );
+  }
 
 }
 
@@ -4163,17 +4883,17 @@ CHARACTER ROW
 */
 
 
-function buildCharacterListItem(
+function buildCharacterRow(
   character
 ) {
 
-  const item =
+  const row =
     document.createElement(
       "article"
     );
 
 
-  item.className =
+  row.className =
     "character-list-item";
 
 
@@ -4195,7 +4915,7 @@ function buildCharacterListItem(
     );
 
 
-  item.innerHTML = `
+  row.innerHTML = `
 
     <div class="character-list-info">
 
@@ -4226,7 +4946,7 @@ function buildCharacterListItem(
 
       <button
         class="list-wish-button ${wished ? "active" : ""}"
-        onclick="toggleWishlist('${escapeHtml(character.id)}')"
+        onclick="toggleWishlist('${escapeAttribute(character.id)}')"
       >
 
         ${
@@ -4242,9 +4962,10 @@ function buildCharacterListItem(
 
       <button
         class="list-star-button ${starwished ? "active" : ""}"
-        onclick="toggleStarwish('${escapeHtml(character.id)}')"
+        onclick="toggleStarwish('${escapeAttribute(character.id)}')"
         ${
-          player.upgrades.starwishSlots <= 0
+          player.upgrades
+            .starwishSlots <= 0
           ?
           "disabled"
           :
@@ -4267,7 +4988,7 @@ function buildCharacterListItem(
   `;
 
 
-  return item;
+  return row;
 
 }
 
@@ -4288,11 +5009,17 @@ function renderCollection() {
     );
 
 
+  if (!list) {
+    return;
+  }
+
+
   list.innerHTML = "";
 
 
   if (
-    player.claimedCharacters.length === 0
+    player.claimedCharacters.length
+    === 0
   ) {
 
     list.innerHTML = `
@@ -4309,233 +5036,26 @@ function renderCollection() {
   }
 
 
-  player.claimedCharacters.forEach(
-
-    function (id) {
-
-      const character =
-        findCharacterById(id);
-
-
-      if (character) {
-
-        list.appendChild(
-
-          buildCharacterListItem(
-            character
-          )
-
-        );
-
-      }
-
-    }
-
-  );
-
-}
-
-
-
-/*
-========================================================
-BADGE UI
-========================================================
-*/
-
-
-function renderBadges() {
-
-  recalculateBonuses();
-
-  applyStarwishTrades();
-
-
-  setText(
-    "badgeBalance",
-    formatNumber(
-      player.currency.kakera
-    )
-  );
-
-
-  const container =
-    document.getElementById(
-      "badgeList"
-    );
-
-
-  container.innerHTML = "";
-
-
   for (
-    const badgeId
-    of Object.keys(BADGES)
+    const id
+    of player.claimedCharacters
   ) {
 
-    const badge =
-      BADGES[badgeId];
+    const character =
+      findCharacter(id);
 
 
-    const currentLevel =
-      player.badges[badgeId];
+    if (character) {
 
+      list.appendChild(
 
-    const unlocked =
-      badgeIsUnlocked(
-        badgeId
-      );
+        buildCharacterRow(
+          character
+        )
 
-
-    const card =
-      document.createElement(
-        "article"
-      );
-
-
-    card.className =
-      "badge-card";
-
-
-    if (!unlocked) {
-
-      card.classList.add(
-        "locked"
       );
 
     }
-
-
-    let levelsHtml = "";
-
-
-    badge.levels.forEach(
-
-      function (
-        level,
-        index
-      ) {
-
-        const number =
-          index + 1;
-
-
-        const owned =
-          currentLevel >= number;
-
-
-        const next =
-          currentLevel + 1
-          ===
-          number;
-
-
-        levelsHtml += `
-
-          <div
-            class="
-              badge-level-row
-              ${owned ? "owned" : ""}
-            "
-          >
-
-            <div class="badge-level-top">
-
-              <span class="badge-level-name">
-                ${roman(number)}
-              </span>
-
-              <span class="badge-cost">
-                ◈ ${formatNumber(level.cost)}
-              </span>
-
-            </div>
-
-
-            <ul class="badge-effects">
-
-              ${
-                level.effects
-                  .map(
-                    effect =>
-                    `<li>${effect}</li>`
-                  )
-                  .join("")
-              }
-
-            </ul>
-
-
-            ${
-              next && unlocked
-
-              ?
-
-              `
-              <button
-                class="badge-buy"
-                onclick="buyBadgeLevel('${badgeId}')"
-                ${
-                  player.currency.kakera
-                  <
-                  level.cost
-                  ?
-                  "disabled"
-                  :
-                  ""
-                }
-              >
-                PURCHASE LEVEL ${roman(number)}
-              </button>
-              `
-
-              :
-
-              ""
-            }
-
-          </div>
-
-        `;
-
-      }
-
-    );
-
-
-    card.innerHTML = `
-
-      <div class="badge-card-header">
-
-        <h2 class="badge-title">
-          ${badge.name}
-        </h2>
-
-        <span class="badge-level">
-          ${
-            unlocked
-            ?
-            "LEVEL "
-            +
-            currentLevel
-            +
-            " / 8"
-            :
-            "LOCKED"
-          }
-        </span>
-
-      </div>
-
-
-      <div class="badge-level-list">
-        ${levelsHtml}
-      </div>
-
-    `;
-
-
-    container.appendChild(card);
 
   }
 
@@ -4545,12 +5065,12 @@ function renderBadges() {
 
 /*
 ========================================================
-BADGE UNLOCK
+BADGES
 ========================================================
 */
 
 
-function badgeIsUnlocked(
+function badgeUnlocked(
   badgeId
 ) {
 
@@ -4581,14 +5101,7 @@ function badgeIsUnlocked(
 
 
 
-/*
-========================================================
-BUY BADGE
-========================================================
-*/
-
-
-function buyBadgeLevel(
+function buyBadge(
   badgeId
 ) {
 
@@ -4599,7 +5112,7 @@ function buyBadgeLevel(
   if (
     !badge
     ||
-    !badgeIsUnlocked(
+    !badgeUnlocked(
       badgeId
     )
   ) {
@@ -4610,7 +5123,9 @@ function buyBadgeLevel(
 
 
   const current =
-    player.badges[badgeId];
+    player.badges[
+      badgeId
+    ];
 
 
   if (
@@ -4622,18 +5137,18 @@ function buyBadgeLevel(
   }
 
 
-  const nextLevel =
+  const level =
     badge.levels[current];
 
 
   if (
     player.currency.kakera
     <
-    nextLevel.cost
+    level.cost
   ) {
 
     alert(
-      "Not enough currency."
+      "Not enough ◈."
     );
 
     return;
@@ -4642,27 +5157,233 @@ function buyBadgeLevel(
 
 
   player.currency.kakera -=
-    nextLevel.cost;
+    level.cost;
 
 
   player.statistics
     .totalCurrencySpent +=
-    nextLevel.cost;
+    level.cost;
 
 
-  player.badges[badgeId] += 1;
+  player.badges[
+    badgeId
+  ] += 1;
 
 
   recalculateBonuses();
 
-  applyStarwishTrades();
-
 
   renderBadges();
 
-  updateEverything();
+  updateAllDisplays();
 
   saveGame();
+
+}
+
+
+
+function renderBadges() {
+
+  setText(
+    "badgeBalance",
+    formatNumber(
+      player.currency.kakera
+    )
+  );
+
+
+  const list =
+    document.getElementById(
+      "badgeList"
+    );
+
+
+  list.innerHTML = "";
+
+
+  for (
+    const badgeId
+    of Object.keys(BADGES)
+  ) {
+
+    const badge =
+      BADGES[badgeId];
+
+
+    const level =
+      player.badges[
+        badgeId
+      ];
+
+
+    const unlocked =
+      badgeUnlocked(
+        badgeId
+      );
+
+
+    const card =
+      document.createElement(
+        "article"
+      );
+
+
+    card.className =
+      "badge-card";
+
+
+    if (!unlocked) {
+
+      card.classList.add(
+        "locked"
+      );
+
+    }
+
+
+    let levels = "";
+
+
+    badge.levels.forEach(
+
+      function (
+        info,
+        index
+      ) {
+
+        const number =
+          index + 1;
+
+
+        const owned =
+          level >= number;
+
+
+        const next =
+          level + 1 === number;
+
+
+        levels += `
+
+          <div
+            class="
+              badge-level-row
+              ${owned ? "owned" : ""}
+            "
+          >
+
+            <div class="badge-level-top">
+
+              <span class="badge-level-name">
+                ${roman(number)}
+              </span>
+
+              <span>
+                ◈ ${formatNumber(info.cost)}
+              </span>
+
+            </div>
+
+
+            <ul class="badge-effects">
+
+              ${
+                info.effects
+                  .map(
+                    function (effect) {
+
+                      return (
+                        "<li>"
+                        +
+                        effect
+                        +
+                        "</li>"
+                      );
+
+                    }
+                  )
+                  .join("")
+              }
+
+            </ul>
+
+
+            ${
+              next
+              &&
+              unlocked
+
+              ?
+
+              `
+              <button
+                class="badge-buy"
+                onclick="buyBadge('${badgeId}')"
+                ${
+                  player.currency.kakera
+                  <
+                  info.cost
+                  ?
+                  "disabled"
+                  :
+                  ""
+                }
+              >
+                PURCHASE ${roman(number)}
+              </button>
+              `
+
+              :
+
+              ""
+            }
+
+          </div>
+
+        `;
+
+      }
+
+    );
+
+
+    card.innerHTML = `
+
+      <div class="badge-card-header">
+
+        <h2 class="badge-title">
+          ${badge.name}
+        </h2>
+
+        <span class="badge-level">
+
+          ${
+            unlocked
+            ?
+            "LEVEL "
+            +
+            level
+            +
+            " / 8"
+            :
+            "LOCKED"
+          }
+
+        </span>
+
+      </div>
+
+      ${levels}
+
+    `;
+
+
+    list.appendChild(
+      card
+    );
+
+  }
 
 }
 
@@ -4675,13 +5396,13 @@ SPHERES
 */
 
 
-function awardSphereDraws(
-  quantity
+function awardSpheres(
+  amount
 ) {
 
   for (
     let i = 0;
-    i < quantity;
+    i < amount;
     i++
   ) {
 
@@ -4707,20 +5428,13 @@ function awardSphereDraws(
 
 
 
-/*
-========================================================
-SPHERE TABLE
-========================================================
-*/
-
-
 function rollSphere() {
 
   const level =
     player.badges.diamond;
 
 
-  const roll =
+  const d100 =
     randomInteger(
       1,
       100
@@ -4737,16 +5451,20 @@ function rollSphere() {
     table = [
 
       ["teal", 1, 33, 20],
+
       ["green", 34, 56, 35],
+
       ["yellow", 57, 71, 55],
+
       ["orange", 72, 84, 90],
+
       ["red", 85, 93, 150],
+
       ["rainbow", 94, 100, 500]
 
     ];
 
   }
-
 
   else if (
     level >= 7
@@ -4755,17 +5473,22 @@ function rollSphere() {
     table = [
 
       ["blue", 1, 16, 10],
+
       ["teal", 17, 41, 20],
+
       ["green", 42, 61, 35],
+
       ["yellow", 62, 76, 55],
+
       ["orange", 77, 87, 90],
+
       ["red", 88, 95, 150],
+
       ["rainbow", 96, 100, 500]
 
     ];
 
   }
-
 
   else if (
     level >= 6
@@ -4774,17 +5497,22 @@ function rollSphere() {
     table = [
 
       ["blue", 1, 25, 10],
+
       ["teal", 26, 47, 20],
+
       ["green", 48, 65, 35],
+
       ["yellow", 66, 79, 55],
+
       ["orange", 80, 89, 90],
+
       ["red", 90, 96, 150],
+
       ["rainbow", 97, 100, 500]
 
     ];
 
   }
-
 
   else if (
     level >= 5
@@ -4793,17 +5521,22 @@ function rollSphere() {
     table = [
 
       ["blue", 1, 32, 10],
+
       ["teal", 33, 54, 20],
+
       ["green", 55, 72, 35],
+
       ["yellow", 73, 85, 55],
+
       ["orange", 86, 91, 90],
+
       ["red", 92, 97, 150],
+
       ["rainbow", 98, 100, 500]
 
     ];
 
   }
-
 
   else if (
     level >= 4
@@ -4812,27 +5545,37 @@ function rollSphere() {
     table = [
 
       ["blue", 1, 50, 10],
+
       ["teal", 51, 69, 20],
+
       ["green", 70, 84, 35],
+
       ["yellow", 85, 94, 55],
+
       ["orange", 95, 97, 90],
+
       ["red", 98, 99, 150],
+
       ["rainbow", 100, 100, 500]
 
     ];
 
   }
 
-
   else {
 
     table = [
 
       ["blue", 1, 50, 10],
+
       ["teal", 51, 75, 20],
+
       ["green", 76, 90, 35],
+
       ["yellow", 91, 97, 55],
+
       ["orange", 98, 99, 90],
+
       ["red", 100, 100, 150]
 
     ];
@@ -4846,9 +5589,13 @@ function rollSphere() {
       function (entry) {
 
         return (
-          roll >= entry[1]
+
+          d100 >= entry[1]
+
           &&
-          roll <= entry[2]
+
+          d100 <= entry[2]
+
         );
 
       }
@@ -4858,9 +5605,11 @@ function rollSphere() {
 
   return {
 
-    type: result[0],
+    type:
+      result[0],
 
-    value: result[3]
+    value:
+      result[3]
 
   };
 
@@ -4868,44 +5617,42 @@ function rollSphere() {
 
 
 
-/*
-========================================================
-SPHERE SCREEN
-========================================================
-*/
-
-
 function renderSpheres() {
 
-  const unlocked =
-    player.upgrades
-      .spheresUnlocked;
-
-
   setText(
+
     "sphereUnlocked",
-    unlocked
+
+    player.upgrades
+      .spheresUnlocked
     ?
     "Yes"
     :
     "No"
+
   );
 
 
   setText(
-    "sphereCurrencyDisplay",
+
+    "sphereValue",
+
     formatNumber(
       player.currency.spheres
     )
+
   );
 
 
   setText(
-    "sphereDrawsDisplay",
+
+    "sphereDraws",
+
     formatNumber(
       player.statistics
         .totalSphereDraws
     )
+
   );
 
 
@@ -4918,17 +5665,28 @@ function renderSpheres() {
   inventory.innerHTML = "";
 
 
+  const colors = [
+
+    "blue",
+
+    "teal",
+
+    "green",
+
+    "yellow",
+
+    "orange",
+
+    "red",
+
+    "rainbow"
+
+  ];
+
+
   for (
-    const type
-    of [
-      "blue",
-      "teal",
-      "green",
-      "yellow",
-      "orange",
-      "red",
-      "rainbow"
-    ]
+    const color
+    of colors
   ) {
 
     const item =
@@ -4943,12 +5701,14 @@ function renderSpheres() {
 
     item.innerHTML = `
 
-      ${capitalize(type)}
+      ${capitalize(color)}
 
       <strong>
 
         ${formatNumber(
-          player.sphereInventory[type]
+          player.sphereInventory[
+            color
+          ]
         )}
 
       </strong>
@@ -4973,7 +5733,7 @@ PROBABILITIES
 */
 
 
-function getDisplayedCharacterChance(
+function getCharacterChance(
   character
 ) {
 
@@ -4983,7 +5743,7 @@ function getDisplayedCharacterChance(
 
   let totalWeight = 0;
 
-  let targetWeight = 1;
+  let characterWeight = 1;
 
 
   for (
@@ -5005,8 +5765,11 @@ function getDisplayedCharacterChance(
       ) {
 
         weight *=
+
           1
+
           +
+
           (
             player.upgrades
               .wishSpawnBonus
@@ -5024,8 +5787,11 @@ function getDisplayedCharacterChance(
       ) {
 
         weight *=
+
           1
+
           +
+
           (
             player.upgrades
               .starwishSpawnBonus
@@ -5042,7 +5808,7 @@ function getDisplayedCharacterChance(
       entry.id === character.id
     ) {
 
-      targetWeight =
+      characterWeight =
         weight;
 
     }
@@ -5056,7 +5822,7 @@ function getDisplayedCharacterChance(
 
   return formatPercent(
 
-    targetWeight
+    characterWeight
     /
     totalWeight
 
@@ -5066,68 +5832,7 @@ function getDisplayedCharacterChance(
 
 
 
-/*
-========================================================
-WISH ROLL BONUS
-========================================================
-
-Bronze II:
-when a Wished Character is generated,
-award the configured bonus immediately.
-========================================================
-*/
-
-
-function applyWishRollBonus() {
-
-  for (
-    const result
-    of currentBatch
-  ) {
-
-    if (
-      result.type === "character"
-      &&
-      player.wishlist.includes(
-        result.id
-      )
-      &&
-      !result.wishBonusPaid
-      &&
-      player.upgrades
-        .wishValueBonus > 0
-    ) {
-
-      player.currency.kakera +=
-        player.upgrades
-          .wishValueBonus;
-
-
-      player.statistics
-        .totalCurrencyEarned +=
-        player.upgrades
-          .wishValueBonus;
-
-
-      result.wishBonusPaid =
-        true;
-
-    }
-
-  }
-
-}
-
-
-
-/*
-========================================================
-CURRENCY / EMPTY PROBABILITIES
-========================================================
-*/
-
-
-function getCurrencyProbability(
+function getCurrencyChance(
   result
 ) {
 
@@ -5141,11 +5846,15 @@ function getCurrencyProbability(
       function (entry) {
 
         return (
+
           entry.type === "currency"
+
           &&
-          entry.amount
+
+          Number(entry.amount)
           ===
-          result.amount
+          Number(result.amount)
+
         );
 
       }
@@ -5164,7 +5873,8 @@ function getCurrencyProbability(
 }
 
 
-function getEmptyProbability() {
+
+function getEmptyChance() {
 
   const pool =
     getEffectiveRollPool();
@@ -5173,8 +5883,13 @@ function getEmptyProbability() {
   const empties =
     pool.filter(
 
-      entry =>
-      entry.type === "empty"
+      function (entry) {
+
+        return (
+          entry.type === "empty"
+        );
+
+      }
 
     ).length;
 
@@ -5193,115 +5908,12 @@ function getEmptyProbability() {
 
 /*
 ========================================================
-CARD POSITION
-========================================================
-*/
-
-
-function updateCardPosition() {
-
-  const rail =
-    document.getElementById(
-      "rollRail"
-    );
-
-
-  const cards =
-    rail.querySelectorAll(
-      ".roll-card"
-    );
-
-
-  if (
-    cards.length === 0
-  ) {
-
-    return;
-
-  }
-
-
-  const center =
-    rail.scrollLeft
-    +
-    rail.clientWidth / 2;
-
-
-  let closest = 0;
-
-  let distance =
-    Infinity;
-
-
-  cards.forEach(
-
-    function (
-      card,
-      index
-    ) {
-
-      const cardCenter =
-        card.offsetLeft
-        +
-        card.offsetWidth / 2;
-
-
-      const currentDistance =
-        Math.abs(
-          cardCenter
-          -
-          center
-        );
-
-
-      if (
-        currentDistance
-        <
-        distance
-      ) {
-
-        distance =
-          currentDistance;
-
-
-        closest =
-          index;
-
-      }
-
-    }
-
-  );
-
-
-  setText(
-
-    "cardPosition",
-
-    (closest + 1)
-
-    +
-
-    " / "
-
-    +
-
-    cards.length
-
-  );
-
-}
-
-
-
-/*
-========================================================
 PROFILE
 ========================================================
 */
 
 
-function updateEverything() {
+function updateAllDisplays() {
 
   if (!player) {
     return;
@@ -5309,11 +5921,6 @@ function updateEverything() {
 
 
   recalculateBonuses();
-
-  applyStarwishTrades();
-
-
-  applyWishRollBonus();
 
 
   setText(
@@ -5330,21 +5937,27 @@ function updateEverything() {
 
   setText(
     "rollsDisplay",
-    player.rounds.rollsPerRound
+    player.rounds
+      .rollsPerRound
   );
 
 
   setText(
     "claimsDisplay",
-    player.claims.available
+    player.claims
+      .available
   );
 
 
   setText(
+
     "currencyDisplay",
+
     formatNumber(
-      player.currency.kakera
+      player.currency
+        .kakera
     )
+
   );
 
 
@@ -5356,13 +5969,15 @@ function updateEverything() {
 
   setText(
     "profileRolls",
-    player.rounds.rollsPerRound
+    player.rounds
+      .rollsPerRound
   );
 
 
   setText(
     "profileClaims",
-    player.claims.available
+    player.claims
+      .available
   );
 
 
@@ -5370,7 +5985,8 @@ function updateEverything() {
 
     "profileStoredClaims",
 
-    player.storedClaims.current
+    player.storedClaims
+      .current
 
     +
 
@@ -5378,47 +5994,60 @@ function updateEverything() {
 
     +
 
-    player.storedClaims.maximum
+    player.storedClaims
+      .maximum
 
   );
 
 
   setText(
     "profileWishlistSlots",
-    player.upgrades.wishlistSlots
+    player.upgrades
+      .wishlistSlots
   );
 
 
   setText(
-    "profileWishBonusValue",
+    "profileWishBonus",
     formatNumber(
       player.upgrades
-        .wishValueBonus
+        .wishCurrencyBonus
     )
   );
 
 
   setText(
     "profileStarwishSlots",
-    player.upgrades.starwishSlots
+    player.upgrades
+      .starwishSlots
   );
 
 
   setText(
+
     "profileWishSpawn",
+
     player.upgrades
       .wishSpawnBonus
+
     +
+
     "%"
+
   );
 
 
   setText(
+
     "profileStarwishSpawn",
+
     player.upgrades
       .starwishSpawnBonus
+
     +
+
     "%"
+
   );
 
 
@@ -5435,10 +6064,14 @@ function updateEverything() {
 
 
   setText(
+
     "profileCurrency",
+
     formatNumber(
-      player.currency.kakera
+      player.currency
+        .kakera
     )
+
   );
 
 
@@ -5447,7 +6080,8 @@ function updateEverything() {
     "profileReactionPower",
 
     formatNumber(
-      player.reactionPower.current
+      player.reactionPower
+        .current
     )
 
     +
@@ -5457,7 +6091,8 @@ function updateEverything() {
     +
 
     formatNumber(
-      player.reactionPower.maximum
+      player.reactionPower
+        .maximum
     )
 
     +
@@ -5472,7 +6107,7 @@ function updateEverything() {
     "profileReactionCost",
 
     player.upgrades
-      .reactionPowerCost
+      .reactionCost
 
     +
 
@@ -5483,10 +6118,10 @@ function updateEverything() {
 
   setText(
 
-    "profilePowerRegen",
+    "profileReactionRegen",
 
     player.upgrades
-      .reactionRegeneration
+      .reactionRegen
 
     +
 
@@ -5496,14 +6131,8 @@ function updateEverything() {
 
 
   setText(
-    "profileTenthKeyBonus",
-    "10,000 ◈"
-  );
 
-
-  setText(
-
-    "profileTotalKeys",
+    "profileKeys",
 
     formatNumber(
       getTotalKeys()
@@ -5514,34 +6143,17 @@ function updateEverything() {
 
   setText(
 
-    "profileAdditionalKeyChance",
-
-    (
-      player.upgrades
-        .additionalKeyChance
-      ??
-      0
-    )
-
-    +
-
-    "%"
-
-  );
-
-
-  setText(
-
     "profileSphereValue",
 
     formatNumber(
-      player.currency.spheres
+      player.currency
+        .spheres
     )
 
   );
 
 
-  updateNextClaimNotice();
+  updateNextClaim();
 
 }
 
@@ -5554,7 +6166,7 @@ NEXT CLAIM
 */
 
 
-function updateNextClaimNotice() {
+function updateNextClaim() {
 
   const interval =
     player.upgrades
@@ -5565,18 +6177,17 @@ function updateNextClaimNotice() {
     player.rounds.current;
 
 
-  const next =
-    current
-    +
-    (
-      interval
-      -
-      (
-        current
-        %
-        interval
-      )
-    );
+  let next =
+    current + 1;
+
+
+  while (
+    next % interval !== 0
+  ) {
+
+    next += 1;
+
+  }
 
 
   setText(
@@ -5606,15 +6217,15 @@ function showRoundNotice(
   text
 ) {
 
-  const box =
+  const notice =
     document.getElementById(
-      "roundRewardNotice"
+      "roundNotice"
     );
 
 
   if (!text) {
 
-    box.classList.add(
+    notice.classList.add(
       "hidden"
     );
 
@@ -5623,10 +6234,11 @@ function showRoundNotice(
   }
 
 
-  box.textContent = text;
+  notice.textContent =
+    text;
 
 
-  box.classList.remove(
+  notice.classList.remove(
     "hidden"
   );
 
@@ -5636,31 +6248,12 @@ function showRoundNotice(
 
 /*
 ========================================================
-UTILITIES
+FIND CHARACTER
 ========================================================
 */
 
 
-function getCharacterEntries() {
-
-  return rollDatabase.filter(
-
-    function (entry) {
-
-      return (
-        entry.type
-        ===
-        "character"
-      );
-
-    }
-
-  );
-
-}
-
-
-function findCharacterById(
+function findCharacter(
   id
 ) {
 
@@ -5670,9 +6263,7 @@ function findCharacterById(
       function (character) {
 
         return (
-          character.id
-          ===
-          id
+          character.id === id
         );
 
       }
@@ -5680,6 +6271,14 @@ function findCharacterById(
     );
 
 }
+
+
+
+/*
+========================================================
+TOTAL KEYS
+========================================================
+*/
 
 
 function getTotalKeys() {
@@ -5691,15 +6290,21 @@ function getTotalKeys() {
 
     function (
       total,
-      value
+      amount
     ) {
 
       return (
+
         total
+
         +
+
         Number(
-          value || 0
+          amount
+          ??
+          0
         )
+
       );
 
     },
@@ -5711,12 +6316,20 @@ function getTotalKeys() {
 }
 
 
+
+/*
+========================================================
+HELPERS
+========================================================
+*/
+
+
 function weightedChoice(
-  choices
+  array
 ) {
 
   const total =
-    choices.reduce(
+    array.reduce(
 
       function (
         sum,
@@ -5744,7 +6357,7 @@ function weightedChoice(
 
   for (
     const item
-    of choices
+    of array
   ) {
 
     random -=
@@ -5762,11 +6375,12 @@ function weightedChoice(
   }
 
 
-  return choices[
-    choices.length - 1
+  return array[
+    array.length - 1
   ];
 
 }
+
 
 
 function randomInteger(
@@ -5777,7 +6391,9 @@ function randomInteger(
   return Math.floor(
 
     Math.random()
+
     *
+
     (
       maximum
       -
@@ -5793,48 +6409,26 @@ function randomInteger(
 }
 
 
-function formatPercent(
-  decimal
+
+function clamp(
+  value,
+  minimum,
+  maximum
 ) {
 
-  const percent =
-    decimal
-    *
-    100;
+  return Math.min(
 
+    maximum,
 
-  if (
-    percent >= 1
-  ) {
+    Math.max(
+      minimum,
+      value
+    )
 
-    return percent.toFixed(2);
-
-  }
-
-
-  if (
-    percent >= 0.1
-  ) {
-
-    return percent.toFixed(3);
-
-  }
-
-
-  return percent.toFixed(4);
+  );
 
 }
 
-
-function formatNumber(
-  value
-) {
-
-  return Number(
-    value ?? 0
-  ).toLocaleString();
-
-}
 
 
 function setText(
@@ -5843,7 +6437,9 @@ function setText(
 ) {
 
   const element =
-    document.getElementById(id);
+    document.getElementById(
+      id
+    );
 
 
   if (element) {
@@ -5856,51 +6452,142 @@ function setText(
 }
 
 
+
+function formatNumber(
+  value
+) {
+
+  return Number(
+    value
+    ??
+    0
+  ).toLocaleString();
+
+}
+
+
+
+function formatPercent(
+  decimal
+) {
+
+  const value =
+    decimal * 100;
+
+
+  if (
+    value >= 1
+  ) {
+
+    return value.toFixed(2);
+
+  }
+
+
+  if (
+    value >= 0.1
+  ) {
+
+    return value.toFixed(3);
+
+  }
+
+
+  return value.toFixed(4);
+
+}
+
+
+
 function escapeHtml(
   value
 ) {
 
   return String(value)
 
-    .replaceAll("&", "&amp;")
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
 
-    .replaceAll("<", "&lt;")
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
 
-    .replaceAll(">", "&gt;")
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
 
-    .replaceAll('"', "&quot;")
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
 
-    .replaceAll("'", "&#039;");
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
 
 }
 
 
+
+function escapeAttribute(
+  value
+) {
+
+  return escapeHtml(value);
+
+}
+
+
+
 function capitalize(
-  text
+  value
 ) {
 
   return (
-    text.charAt(0).toUpperCase()
+
+    value.charAt(0)
+      .toUpperCase()
+
     +
-    text.slice(1)
+
+    value.slice(1)
+
   );
 
 }
 
 
-function roman(number) {
+
+function roman(
+  value
+) {
 
   return [
+
     "",
+
     "I",
+
     "II",
+
     "III",
+
     "IV",
+
     "V",
+
     "VI",
+
     "VII",
+
     "VIII"
-  ][number];
+
+  ][value];
 
 }
 
@@ -5930,6 +6617,7 @@ setInterval(
 );
 
 
+
 window.addEventListener(
 
   "beforeunload",
@@ -5957,9 +6645,7 @@ window.addEventListener(
 
   function () {
 
-    updateSaveSlotInfo();
-
-    setupWishlistSearch();
+    updateSaveCards();
 
   }
 
