@@ -29,9 +29,6 @@
 
   --line-soft: rgba(215, 190, 129, 0.12);
 
-  --shadow:
-    0 22px 50px rgba(0,0,0,0.48);
-
 }
 
 
@@ -52,14 +49,6 @@ body {
 
   min-height: 100dvh;
 
-  padding:
-    env(safe-area-inset-top)
-    env(safe-area-inset-right)
-    env(safe-area-inset-bottom)
-    env(safe-area-inset-left);
-
-  color: var(--cream);
-
   background:
 
     radial-gradient(
@@ -73,6 +62,8 @@ body {
       #1d1823,
       #121016
     );
+
+  color: var(--cream);
 
   font-family:
     Georgia,
@@ -106,7 +97,9 @@ button {
 
   color: var(--gold);
 
-  font-family: Arial, sans-serif;
+  font-family:
+    Arial,
+    sans-serif;
 
   font-size: 9px;
 
@@ -120,19 +113,31 @@ button {
 
 
 
-/* ================================= */
-/* SAVE SELECT */
-/* ================================= */
+/* ===================================== */
+/* SAVE SCREEN */
+/* ===================================== */
 
 .save-screen {
 
+  min-height: 100vh;
+
   min-height: 100dvh;
 
-  padding: 50px 20px;
+  padding:
+    max(50px, env(safe-area-inset-top))
+    20px
+    max(50px, env(safe-area-inset-bottom));
 
   display: flex;
 
   justify-content: center;
+
+  background:
+    linear-gradient(
+      180deg,
+      #1c1722,
+      #111016
+    );
 
 }
 
@@ -150,11 +155,11 @@ button {
 
 .ornament {
 
+  margin-bottom: 13px;
+
   color: var(--gold);
 
   font-size: 31px;
-
-  margin-bottom: 13px;
 
 }
 
@@ -224,11 +229,11 @@ button {
   display: grid;
 
   grid-template-columns:
-    70px 1fr 35px;
+    70px
+    1fr
+    35px;
 
   align-items: center;
-
-  text-align: left;
 
   overflow: hidden;
 
@@ -242,7 +247,12 @@ button {
     ),
     var(--teal);
 
-  box-shadow: var(--shadow);
+  color: var(--cream);
+
+  text-align: left;
+
+  box-shadow:
+    0 22px 50px rgba(0,0,0,0.48);
 
 }
 
@@ -258,6 +268,13 @@ button {
   border: 1px solid var(--line-soft);
 
   pointer-events: none;
+
+}
+
+
+.save-file:active {
+
+  transform: scale(0.99);
 
 }
 
@@ -301,9 +318,9 @@ button {
 
   margin: 9px 0 6px;
 
-  font-weight: 400;
-
   font-size: 22px;
+
+  font-weight: 400;
 
 }
 
@@ -325,7 +342,7 @@ button {
 
   position: relative;
 
-  z-index: 3;
+  z-index: 5;
 
   border: 0;
 
@@ -337,11 +354,13 @@ button {
 
 
 
-/* ================================= */
-/* HEADER */
-/* ================================= */
+/* ===================================== */
+/* GAME */
+/* ===================================== */
 
 .game-screen {
+
+  min-height: 100vh;
 
   min-height: 100dvh;
 
@@ -349,12 +368,30 @@ button {
 
   margin: auto;
 
+  padding-bottom:
+    env(safe-area-inset-bottom);
+
+  background:
+    linear-gradient(
+      180deg,
+      #17131c,
+      #111016
+    );
+
 }
 
 
+
+/* HEADER */
+
 .app-header {
 
-  height: 58px;
+  min-height:
+    calc(
+      58px
+      +
+      env(safe-area-inset-top)
+    );
 
   position: sticky;
 
@@ -364,22 +401,25 @@ button {
 
   display: flex;
 
-  align-items: center;
+  align-items: flex-end;
 
   justify-content: space-between;
 
-  padding: 0 16px;
+  padding:
+    env(safe-area-inset-top)
+    16px
+    10px;
 
   border-bottom: 1px solid var(--line);
 
-  background: rgba(20,17,24,0.97);
-
-  backdrop-filter: blur(12px);
+  background: #151219;
 
 }
 
 
 .brand {
+
+  min-height: 38px;
 
   display: flex;
 
@@ -404,6 +444,8 @@ button {
 
 
 .save-indicator {
+
+  min-height: 38px;
 
   display: flex;
 
@@ -438,15 +480,18 @@ button {
 
 
 
-/* ================================= */
 /* NAV */
-/* ================================= */
 
 .main-nav {
 
   position: sticky;
 
-  top: 58px;
+  top:
+    calc(
+      58px
+      +
+      env(safe-area-inset-top)
+    );
 
   z-index: 19;
 
@@ -456,7 +501,7 @@ button {
 
   border-bottom: 1px solid var(--line);
 
-  background: rgba(24,20,29,0.97);
+  background: #18151d;
 
   scrollbar-width: none;
 
@@ -504,9 +549,9 @@ button {
 
 
 
-/* ================================= */
+/* ===================================== */
 /* PAGES */
-/* ================================= */
+/* ===================================== */
 
 .game-page {
 
@@ -523,9 +568,9 @@ button {
 
 
 
-/* ================================= */
-/* ROUND STATUS */
-/* ================================= */
+/* ===================================== */
+/* ROUND STRIP */
+/* ===================================== */
 
 .round-strip {
 
@@ -628,17 +673,17 @@ button {
 
 
 
-/* ================================= */
-/* ROLL TITLE */
-/* ================================= */
+/* ===================================== */
+/* ROLL HEADING */
+/* ===================================== */
 
 .roll-title-row {
 
   display: flex;
 
-  justify-content: space-between;
-
   align-items: end;
+
+  justify-content: space-between;
 
   padding: 24px 18px 10px;
 
@@ -658,11 +703,11 @@ button {
 
 .roll-position {
 
-  text-align: right;
-
   color: var(--gold);
 
   font-family: Arial, sans-serif;
+
+  text-align: right;
 
 }
 
@@ -688,9 +733,38 @@ button {
 
 
 
-/* ================================= */
+/* ===================================== */
+/* ERROR */
+/* ===================================== */
+
+.game-error {
+
+  margin: 5px 18px 18px;
+
+  padding: 14px;
+
+  border:
+    1px solid
+    rgba(200,90,90,0.45);
+
+  background:
+    rgba(100,25,35,0.18);
+
+  color: #e9a2a8;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 11px;
+
+  line-height: 1.5;
+
+}
+
+
+
+/* ===================================== */
 /* CARD RAIL */
-/* ================================= */
+/* ===================================== */
 
 .roll-rail {
 
@@ -702,7 +776,10 @@ button {
 
   scroll-snap-type: x mandatory;
 
-  padding: 8px 9vw 30px;
+  padding:
+    8px
+    9vw
+    30px;
 
   scrollbar-width: none;
 
@@ -715,13 +792,16 @@ button {
 
 
 
-/* ================================= */
-/* CARDS */
-/* ================================= */
+/* ===================================== */
+/* CARD */
+/* ===================================== */
 
 .roll-card {
 
-  flex: 0 0 min(81vw, 390px);
+  flex:
+    0
+    0
+    min(81vw, 390px);
 
   min-height: 590px;
 
@@ -748,7 +828,10 @@ button {
     var(--teal);
 
   box-shadow:
-    8px 14px 30px rgba(0,0,0,0.55);
+    8px
+    14px
+    30px
+    rgba(0,0,0,0.55);
 
 }
 
@@ -761,18 +844,16 @@ button {
 
   inset: 8px;
 
-  border: 1px solid rgba(226,199,133,0.19);
+  z-index: 5;
+
+  border:
+    1px solid
+    rgba(226,199,133,0.19);
 
   pointer-events: none;
 
-  z-index: 5;
-
 }
 
-
-/*
-WISHLIST HIGHLIGHT
-*/
 
 .roll-card.wished {
 
@@ -840,7 +921,10 @@ WISHLIST HIGHLIGHT
 
 .card-top {
 
-  padding: 6px 20px 17px;
+  padding:
+    6px
+    20px
+    17px;
 
 }
 
@@ -937,7 +1021,7 @@ WISHLIST HIGHLIGHT
 
 
 
-/* ART */
+/* IMAGE */
 
 .card-art {
 
@@ -947,11 +1031,15 @@ WISHLIST HIGHLIGHT
 
   position: relative;
 
-  margin: 0 17px;
+  margin:
+    0
+    17px;
 
   overflow: hidden;
 
-  border: 1px solid rgba(213,188,126,0.31);
+  border:
+    1px solid
+    rgba(213,188,126,0.31);
 
   background:
     radial-gradient(
@@ -980,7 +1068,8 @@ WISHLIST HIGHLIGHT
 
   place-items: center;
 
-  color: rgba(211,181,115,0.17);
+  color:
+    rgba(211,181,115,0.17);
 
   font-size: 65px;
 
@@ -1007,7 +1096,10 @@ WISHLIST HIGHLIGHT
 
 .card-footer {
 
-  padding: 15px 19px 20px;
+  padding:
+    15px
+    19px
+    20px;
 
 }
 
@@ -1038,7 +1130,9 @@ WISHLIST HIGHLIGHT
 
   display: grid;
 
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns:
+    1fr
+    1fr;
 
   gap: 8px;
 
@@ -1054,7 +1148,8 @@ WISHLIST HIGHLIGHT
 
   border: 1px solid var(--gold);
 
-  background: rgba(202,174,114,0.06);
+  background:
+    rgba(202,174,114,0.06);
 
   color: var(--gold-light);
 
@@ -1188,13 +1283,16 @@ WISHLIST HIGHLIGHT
 
 
 
-/* ================================= */
+/* ===================================== */
 /* NEXT ROUND */
-/* ================================= */
+/* ===================================== */
 
 .next-round-area {
 
-  padding: 2px 19px 40px;
+  padding:
+    2px
+    19px
+    40px;
 
   text-align: center;
 
@@ -1203,9 +1301,9 @@ WISHLIST HIGHLIGHT
 
 .round-rule {
 
-  color: var(--gold);
-
   margin-bottom: 13px;
+
+  color: var(--gold);
 
 }
 
@@ -1252,13 +1350,16 @@ WISHLIST HIGHLIGHT
 
 
 
-/* ================================= */
-/* PROFILE */
-/* ================================= */
+/* ===================================== */
+/* PAGE HEADINGS */
+/* ===================================== */
 
 .page-heading {
 
-  padding: 30px 18px 15px;
+  padding:
+    30px
+    18px
+    15px;
 
 }
 
@@ -1274,9 +1375,17 @@ WISHLIST HIGHLIGHT
 }
 
 
+
+/* ===================================== */
+/* PROFILE */
+/* ===================================== */
+
 .profile-panel {
 
-  margin: 0 17px 22px;
+  margin:
+    0
+    17px
+    22px;
 
   border: 1px solid var(--line);
 
@@ -1298,9 +1407,13 @@ WISHLIST HIGHLIGHT
 
   gap: 20px;
 
-  padding: 10px 14px;
+  padding:
+    10px
+    14px;
 
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom:
+    1px solid
+    var(--line-soft);
 
 }
 
@@ -1343,7 +1456,10 @@ WISHLIST HIGHLIGHT
 
 .profile-section h2 {
 
-  margin: 7px 17px 14px;
+  margin:
+    7px
+    17px
+    14px;
 
   font-size: 24px;
 
@@ -1362,13 +1478,15 @@ WISHLIST HIGHLIGHT
 
 
 
-/* ================================= */
+/* ===================================== */
 /* REACTIONS */
-/* ================================= */
+/* ===================================== */
 
 .reaction-section {
 
-  margin: 32px 17px;
+  margin:
+    32px
+    17px;
 
 }
 
@@ -1399,13 +1517,19 @@ WISHLIST HIGHLIGHT
   display: grid;
 
   grid-template-columns:
-    1.25fr 0.65fr 1fr;
+    1.25fr
+    0.65fr
+    1fr;
 
   gap: 10px;
 
-  padding: 8px 3px;
+  padding:
+    8px
+    3px;
 
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom:
+    1px solid
+    var(--line-soft);
 
   font-family: Arial, sans-serif;
 
@@ -1432,6 +1556,7 @@ WISHLIST HIGHLIGHT
 .reaction-red { color: #dd655f; }
 .reaction-white { color: #f4eee2; }
 
+
 .reaction-black {
 
   color: #080808;
@@ -1454,9 +1579,9 @@ WISHLIST HIGHLIGHT
 
 
 
-/* ================================= */
+/* ===================================== */
 /* WISHLIST */
-/* ================================= */
+/* ===================================== */
 
 .wishlist-counter {
 
@@ -1473,7 +1598,10 @@ WISHLIST HIGHLIGHT
 
 .wishlist-section {
 
-  margin: 8px 17px 30px;
+  margin:
+    8px
+    17px
+    30px;
 
 }
 
@@ -1482,9 +1610,14 @@ WISHLIST HIGHLIGHT
 
   width: 100%;
 
-  margin: 10px 0 14px;
+  margin:
+    10px
+    0
+    14px;
 
-  padding: 13px 14px;
+  padding:
+    13px
+    14px;
 
   border: 1px solid var(--line);
 
@@ -1492,7 +1625,8 @@ WISHLIST HIGHLIGHT
 
   outline: none;
 
-  background: rgba(16,60,64,0.22);
+  background:
+    rgba(16,60,64,0.22);
 
   color: var(--cream);
 
@@ -1516,7 +1650,10 @@ WISHLIST HIGHLIGHT
 
   gap: 8px;
 
-  padding: 0 17px 30px;
+  padding:
+    0
+    17px
+    30px;
 
 }
 
@@ -1533,13 +1670,16 @@ WISHLIST HIGHLIGHT
   display: grid;
 
   grid-template-columns:
-    1fr auto;
+    1fr
+    auto;
 
   align-items: center;
 
   gap: 10px;
 
-  padding: 12px 13px;
+  padding:
+    12px
+    13px;
 
   border: 1px solid var(--line-soft);
 
@@ -1551,7 +1691,10 @@ WISHLIST HIGHLIGHT
 
 .character-list-info h3 {
 
-  margin: 0 0 4px;
+  margin:
+    0
+    0
+    4px;
 
   font-size: 15px;
 
@@ -1632,20 +1775,25 @@ WISHLIST HIGHLIGHT
 
 
 
-/* ================================= */
+/* ===================================== */
 /* OTHER PAGES */
-/* ================================= */
+/* ===================================== */
 
 .placeholder-page {
 
-  padding: 40px 18px;
+  padding:
+    40px
+    18px;
 
 }
 
 
 .placeholder-page h1 {
 
-  margin: 6px 0 14px;
+  margin:
+    6px
+    0
+    14px;
 
   font-size: 35px;
 
@@ -1685,14 +1833,16 @@ WISHLIST HIGHLIGHT
 
 
 .luxury-button.secondary {
+
   background: transparent;
+
 }
 
 
 
-/* ================================= */
+/* ===================================== */
 /* MODAL */
-/* ================================= */
+/* ===================================== */
 
 .modal {
 
@@ -1708,10 +1858,16 @@ WISHLIST HIGHLIGHT
 
   justify-content: center;
 
-  padding: 15px;
+  padding:
+    15px
+    15px
+    max(
+      15px,
+      env(safe-area-inset-bottom)
+    );
 
   background:
-    rgba(0,0,0,0.7);
+    rgba(0,0,0,0.72);
 
 }
 
@@ -1754,14 +1910,16 @@ WISHLIST HIGHLIGHT
 
 
 .modal-sheet button.danger {
+
   color: #db8585;
+
 }
 
 
 
-/* ================================= */
-/* LARGE SCREENS */
-/* ================================= */
+/* ===================================== */
+/* DESKTOP */
+/* ===================================== */
 
 @media (min-width: 700px) {
 
