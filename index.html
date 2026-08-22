@@ -29,7 +29,7 @@
 
   <link
     rel="stylesheet"
-    href="style.css?v=30"
+    href="style.css?v=41"
   >
 
 </head>
@@ -38,9 +38,9 @@
 <body>
 
 
-  <!-- ================================= -->
+  <!-- ===================================== -->
   <!-- SAVE SELECT -->
-  <!-- ================================= -->
+  <!-- ===================================== -->
 
   <section
     id="saveScreen"
@@ -95,11 +95,9 @@
               SAVE ONE
             </span>
 
-
             <h2 id="slot1Title">
               New Collection
             </h2>
-
 
             <p id="slot1Info">
               Empty
@@ -137,11 +135,9 @@
               SAVE TWO
             </span>
 
-
             <h2 id="slot2Title">
               New Collection
             </h2>
-
 
             <p id="slot2Info">
               Empty
@@ -179,11 +175,9 @@
               SAVE THREE
             </span>
 
-
             <h2 id="slot3Title">
               New Collection
             </h2>
-
 
             <p id="slot3Info">
               Empty
@@ -210,9 +204,9 @@
 
 
 
-  <!-- ================================= -->
-  <!-- MAIN APP -->
-  <!-- ================================= -->
+  <!-- ===================================== -->
+  <!-- GAME -->
+  <!-- ===================================== -->
 
   <section
     id="gameScreen"
@@ -256,7 +250,7 @@
 
 
 
-    <!-- NAV -->
+    <!-- NAVIGATION -->
 
     <nav class="main-nav">
 
@@ -364,17 +358,15 @@
 
 
 
-    <!-- ================================= -->
-    <!-- ROLLS -->
-    <!-- ================================= -->
+    <!-- ===================================== -->
+    <!-- ROLLS PAGE -->
+    <!-- ===================================== -->
 
     <main
       id="page-rolls"
       class="game-page active-page"
     >
 
-
-      <!-- ROUND STRIP -->
 
       <section class="round-strip">
 
@@ -443,9 +435,8 @@
 
 
 
-      <!-- TITLE -->
-
       <section class="roll-title-row">
+
 
         <div>
 
@@ -463,7 +454,7 @@
         <div class="roll-position">
 
           <span id="cardPosition">
-            1 / 6
+            —
           </span>
 
           <small>
@@ -472,11 +463,22 @@
 
         </div>
 
+
       </section>
 
 
 
-      <!-- CARD RAIL -->
+      <!-- IF SOMETHING GOES WRONG -->
+
+      <div
+        id="gameError"
+        class="game-error hidden"
+      >
+      </div>
+
+
+
+      <!-- CARDS -->
 
       <section
         id="rollRail"
@@ -492,11 +494,7 @@
 
 
         <div class="round-rule">
-
-          <span>
-            ✦
-          </span>
-
+          ✦
         </div>
 
 
@@ -520,9 +518,9 @@
 
 
 
-    <!-- ================================= -->
+    <!-- ===================================== -->
     <!-- PROFILE -->
-    <!-- ================================= -->
+    <!-- ===================================== -->
 
     <main
       id="page-profile"
@@ -615,9 +613,7 @@
         <div class="profile-row">
 
           <span>
-            <i class="currency-symbol">
-              ◈
-            </i>
+            <i class="currency-symbol">◈</i>
             Bonus when Wished
           </span>
 
@@ -684,8 +680,6 @@
 
 
 
-      <!-- CURRENCY -->
-
       <section class="profile-section">
 
 
@@ -697,6 +691,7 @@
         <h2>
           Currency
         </h2>
+
 
 
         <section class="profile-panel">
@@ -795,8 +790,6 @@
 
 
 
-      <!-- REACTION RARITY -->
-
       <section class="reaction-section">
 
 
@@ -807,13 +800,11 @@
 
         <div class="reaction-list">
 
-
           <div>
             <span><i class="reaction-purple">◈</i> Purple</span>
             <span>4.4%</span>
             <strong>1,000</strong>
           </div>
-
 
           <div>
             <span><i class="reaction-blue">◈</i> Blue</span>
@@ -821,13 +812,11 @@
             <strong>1,001–1,500</strong>
           </div>
 
-
           <div>
             <span><i class="reaction-teal">◈</i> Teal</span>
             <span>10.1%</span>
             <strong>1,701–2,200</strong>
           </div>
-
 
           <div>
             <span><i class="reaction-green">◈</i> Green</span>
@@ -835,13 +824,11 @@
             <strong>2,501–3,000</strong>
           </div>
 
-
           <div>
             <span><i class="reaction-yellow">◈</i> Yellow</span>
             <span>30.1%</span>
             <strong>4,001–5,000</strong>
           </div>
-
 
           <div>
             <span><i class="reaction-orange">◈</i> Orange</span>
@@ -849,13 +836,11 @@
             <strong>7,001–8,000</strong>
           </div>
 
-
           <div>
             <span><i class="reaction-red">◈</i> Red</span>
             <span>0.26%</span>
             <strong>14,001–15,000</strong>
           </div>
-
 
           <div>
             <span><i class="reaction-rainbow">◈</i> Rainbow</span>
@@ -863,20 +848,17 @@
             <strong>30,001–31,000</strong>
           </div>
 
-
           <div>
             <span><i class="reaction-white">◈</i> White</span>
             <span>4.4%</span>
             <strong>3–4 random</strong>
           </div>
 
-
           <div>
             <span><i class="reaction-black">◈</i> Black</span>
             <span>0.596%</span>
             <strong>—</strong>
           </div>
-
 
         </div>
 
@@ -921,9 +903,9 @@
 
 
 
-    <!-- ================================= -->
+    <!-- ===================================== -->
     <!-- COLLECTION -->
-    <!-- ================================= -->
+    <!-- ===================================== -->
 
     <main
       id="page-collection"
@@ -955,9 +937,9 @@
 
 
 
-    <!-- ================================= -->
+    <!-- ===================================== -->
     <!-- WISHLIST -->
-    <!-- ================================= -->
+    <!-- ===================================== -->
 
     <main
       id="page-wishlist"
@@ -996,9 +978,8 @@
 
 
 
-      <!-- CURRENT WISHES -->
-
       <section class="wishlist-section">
+
 
         <p class="section-caption">
           CURRENT WISHES
@@ -1011,13 +992,13 @@
         >
         </div>
 
+
       </section>
 
 
 
-      <!-- SEARCH -->
-
       <section class="wishlist-section">
+
 
         <p class="section-caption">
           FIND A CHARACTER
@@ -1039,6 +1020,7 @@
         >
         </div>
 
+
       </section>
 
 
@@ -1046,140 +1028,71 @@
 
 
 
-    <!-- TOWER -->
+    <!-- PLACEHOLDER PAGES -->
 
     <main
       id="page-tower"
       class="game-page"
     >
-
       <section class="placeholder-page">
-
-        <p class="overline">
-          ASCENSION
-        </p>
-
-        <h1>
-          Infinite Tower
-        </h1>
-
+        <p class="overline">ASCENSION</p>
+        <h1>Infinite Tower</h1>
       </section>
-
     </main>
 
-
-
-    <!-- SHOP -->
 
     <main
       id="page-shop"
       class="game-page"
     >
-
       <section class="placeholder-page">
-
-        <p class="overline">
-          EXCHANGE
-        </p>
-
-        <h1>
-          Shop
-        </h1>
-
+        <p class="overline">EXCHANGE</p>
+        <h1>Shop</h1>
       </section>
-
     </main>
 
-
-
-    <!-- BADGES -->
 
     <main
       id="page-badges"
       class="game-page"
     >
-
       <section class="placeholder-page">
-
-        <p class="overline">
-          INSIGNIA
-        </p>
-
-        <h1>
-          Badges
-        </h1>
-
+        <p class="overline">INSIGNIA</p>
+        <h1>Badges</h1>
       </section>
-
     </main>
 
-
-
-    <!-- SPHERES -->
 
     <main
       id="page-spheres"
       class="game-page"
     >
-
       <section class="placeholder-page">
-
-        <p class="overline">
-          SPHERES
-        </p>
-
-        <h1>
-          Sphere System
-        </h1>
-
+        <p class="overline">SPHERES</p>
+        <h1>Sphere System</h1>
       </section>
-
     </main>
 
-
-
-    <!-- GAMBLE -->
 
     <main
       id="page-gamble"
       class="game-page"
     >
-
       <section class="placeholder-page">
-
-        <p class="overline">
-          CHANCE
-        </p>
-
-        <h1>
-          Gamble
-        </h1>
-
+        <p class="overline">CHANCE</p>
+        <h1>Gamble</h1>
       </section>
-
     </main>
 
-
-
-    <!-- STATS -->
 
     <main
       id="page-stats"
       class="game-page"
     >
-
       <section class="placeholder-page">
-
-        <p class="overline">
-          RECORDS
-        </p>
-
-        <h1>
-          Statistics
-        </h1>
-
+        <p class="overline">RECORDS</p>
+        <h1>Statistics</h1>
       </section>
-
     </main>
 
 
@@ -1231,9 +1144,9 @@
 
 
 
-  <!-- ================================= -->
-  <!-- SAVE MODAL -->
-  <!-- ================================= -->
+  <!-- ===================================== -->
+  <!-- SAVE OPTIONS -->
+  <!-- ===================================== -->
 
   <div
     id="saveModal"
@@ -1242,9 +1155,11 @@
 
     <div class="modal-sheet">
 
+
       <p class="overline">
         SAVE OPTIONS
       </p>
+
 
       <h2 id="saveModalTitle">
         Save 1
@@ -1272,13 +1187,20 @@
         Cancel
       </button>
 
+
     </div>
 
   </div>
 
 
-  <script src="data.js?v=30"></script>
-  <script src="app.js?v=30"></script>
+
+  <!-- DATA FIRST -->
+
+  <script src="data.js?v=41"></script>
+
+  <!-- APP SECOND -->
+
+  <script src="app.js?v=41"></script>
 
 
 </body>
