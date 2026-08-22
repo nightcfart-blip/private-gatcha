@@ -1,3 +1,11 @@
+/*
+==================================================
+PRIVATE GACHA
+ROUNDS + WISHLIST
+==================================================
+*/
+
+
 let player = null;
 
 let activeSaveSlot = null;
@@ -9,9 +17,9 @@ let selectedSaveSlot = null;
 
 
 /*
-=========================================
-SAVE NAME
-=========================================
+==================================================
+SAVE KEY
+==================================================
 */
 
 function getSaveName(slot) {
@@ -23,9 +31,9 @@ function getSaveName(slot) {
 
 
 /*
-=========================================
-SAVE MIGRATION
-=========================================
+==================================================
+PLAYER MIGRATION
+==================================================
 */
 
 function ensurePlayerShape() {
@@ -35,24 +43,69 @@ function ensurePlayerShape() {
   }
 
 
-  if (!player.rolls) {
+  /*
+  --------------------------------
+  ROUND SYSTEM
+  --------------------------------
+  */
 
-    player.rolls = {
+  if (!player.rounds) {
 
-      available: 10,
+    player.rounds = {
 
-      maximum: 10
+      current: 1,
+
+      rollsPerRound: 6,
+
+      currentBatch: []
 
     };
 
   }
 
 
+  if (
+    typeof player.rounds.current
+    !== "number"
+  ) {
+
+    player.rounds.current = 1;
+
+  }
+
+
+  if (
+    typeof player.rounds.rollsPerRound
+    !== "number"
+  ) {
+
+    player.rounds.rollsPerRound = 6;
+
+  }
+
+
+  if (
+    !Array.isArray(
+      player.rounds.currentBatch
+    )
+  ) {
+
+    player.rounds.currentBatch = [];
+
+  }
+
+
+  /*
+  --------------------------------
+  CLAIMS
+  --------------------------------
+  */
+
   if (!player.claims) {
 
     player.claims = {
 
-      available: 1,
+      available: 0,
 
       maximum: 1
 
@@ -62,9 +115,25 @@ function ensurePlayerShape() {
 
 
   /*
-  Stored claims are separate from normal
-  currently-available claims.
+  Older versions began with 1 claim.
+
+  If this save has never made a claim,
+  we convert that old starter claim to
+  the new Round system.
   */
+
+  if (
+    player.rounds.current === 1
+    &&
+    player.statistics?.totalClaims === 0
+    &&
+    player.claims.available === 1
+  ) {
+
+    player.claims.available = 0;
+
+  }
+
 
   if (!player.storedClaims) {
 
@@ -79,23 +148,43 @@ function ensurePlayerShape() {
   }
 
 
-  if (!Array.isArray(
-    player.claimedCharacters
-  )) {
+  /*
+  --------------------------------
+  WISHLIST
+  --------------------------------
+  */
+
+  if (
+    !Array.isArray(player.wishlist)
+  ) {
+
+    player.wishlist = [];
+
+  }
+
+
+  /*
+  --------------------------------
+  COLLECTION
+  --------------------------------
+  */
+
+  if (
+    !Array.isArray(
+      player.claimedCharacters
+    )
+  ) {
 
     player.claimedCharacters = [];
 
   }
 
 
-  if (!Array.isArray(
-    player.wishlist
-  )) {
-
-    player.wishlist = [];
-
-  }
-
+  /*
+  --------------------------------
+  KEYS
+  --------------------------------
+  */
 
   if (!player.keys) {
 
@@ -104,12 +193,11 @@ function ensurePlayerShape() {
   }
 
 
-  if (!player.statistics) {
-
-    player.statistics = {};
-
-  }
-
+  /*
+  --------------------------------
+  UPGRADES
+  --------------------------------
+  */
 
   if (!player.upgrades) {
 
@@ -117,10 +205,6 @@ function ensurePlayerShape() {
 
   }
 
-
-  /*
-  Profile defaults.
-  */
 
   const upgradeDefaults = {
 
@@ -158,6 +242,19 @@ function ensurePlayerShape() {
         upgradeDefaults[key];
 
     }
+
+  }
+
+
+  /*
+  --------------------------------
+  STATS
+  --------------------------------
+  */
+
+  if (!player.statistics) {
+
+    player.statistics = {};
 
   }
 
@@ -202,9 +299,9 @@ function ensurePlayerShape() {
 
 
 /*
-=========================================
+==================================================
 LOAD SAVE
-=========================================
+==================================================
 */
 
 function loadSave(slot) {
@@ -224,7 +321,7 @@ function loadSave(slot) {
 
     }
 
-    catch {
+    catch (error) {
 
       alert(
         "This save appears damaged."
@@ -244,10 +341,33 @@ function loadSave(slot) {
   }
 
 
-  activeSaveSlot = slot;
+  activeSaveSlot =
+    slot;
 
 
   ensurePlayerShape();
+
+
+  /*
+  Restore the current Round's deck.
+
+  If there isn't one yet, create it once.
+  */
+
+  if (
+    player.rounds.currentBatch.length === 0
+  ) {
+
+    generateRoundDeck();
+
+  }
+
+  else {
+
+    currentBatch =
+      player.rounds.currentBatch;
+
+  }
 
 
   document
@@ -271,14 +391,7 @@ function loadSave(slot) {
   );
 
 
-  /*
-  AUTOMATICALLY CREATE THE DECK.
-
-  No Roll button.
-  */
-
-  createAvailableRollDeck();
-
+  renderDeck();
 
   updateEverything();
 
@@ -289,15 +402,23 @@ function loadSave(slot) {
 
 
 /*
-=========================================
+==================================================
 SAVE
-=========================================
+==================================================
 */
 
-function saveGame(showMessage = false) {
+function saveGame(
+  showMessage = false
+) {
 
-  if (!player) {
+  if (
+    !player
+    ||
+    activeSaveSlot === null
+  ) {
+
     return;
+
   }
 
 
@@ -305,9 +426,15 @@ function saveGame(showMessage = false) {
     Date.now();
 
 
+  player.rounds.currentBatch =
+    currentBatch;
+
+
   localStorage.setItem(
 
-    getSaveName(activeSaveSlot),
+    getSaveName(
+      activeSaveSlot
+    ),
 
     JSON.stringify(player)
 
@@ -319,18 +446,10 @@ function saveGame(showMessage = false) {
 
   if (showMessage) {
 
-    const status =
-      document.getElementById(
-        "saveStatus"
-      );
-
-
-    if (status) {
-
-      status.textContent =
-        "Collection saved.";
-
-    }
+    setText(
+      "saveStatus",
+      "Collection saved."
+    );
 
   }
 
@@ -339,9 +458,9 @@ function saveGame(showMessage = false) {
 
 
 /*
-=========================================
+==================================================
 SAVE SELECT
-=========================================
+==================================================
 */
 
 function showSaveScreen() {
@@ -366,9 +485,9 @@ function showSaveScreen() {
 
 
 /*
-=========================================
+==================================================
 SAVE CARDS
-=========================================
+==================================================
 */
 
 function updateSaveSlotInfo() {
@@ -406,6 +525,7 @@ function updateSaveSlotInfo() {
       info.textContent =
         "Empty";
 
+
       continue;
 
     }
@@ -422,6 +542,21 @@ function updateSaveSlotInfo() {
 
 
       info.textContent =
+
+        "Round "
+
+        +
+
+        formatNumber(
+          save.rounds?.current
+          ?? 1
+        )
+
+        +
+
+        "  ·  "
+
+        +
 
         formatNumber(
           save.claimedCharacters?.length
@@ -445,6 +580,7 @@ function updateSaveSlotInfo() {
 
     }
 
+
     catch {
 
       title.textContent =
@@ -463,9 +599,9 @@ function updateSaveSlotInfo() {
 
 
 /*
-=========================================
+==================================================
 SAVE OPTIONS
-=========================================
+==================================================
 */
 
 function openSaveMenu(slot) {
@@ -474,10 +610,10 @@ function openSaveMenu(slot) {
     slot;
 
 
-  document.getElementById(
-    "saveModalTitle"
-  ).textContent =
-    "Save " + slot;
+  setText(
+    "saveModalTitle",
+    "Save " + slot
+  );
 
 
   document
@@ -513,14 +649,14 @@ function overwriteSelectedSave() {
   }
 
 
-  const ok =
-    confirm(
+  if (
+    !confirm(
       "Overwrite this save?"
-    );
+    )
+  ) {
 
-
-  if (!ok) {
     return;
+
   }
 
 
@@ -590,9 +726,9 @@ function resetSelectedSave() {
 
 
 /*
-=========================================
+==================================================
 NAVIGATION
-=========================================
+==================================================
 */
 
 function showPage(
@@ -601,7 +737,9 @@ function showPage(
 ) {
 
   document
-    .querySelectorAll(".game-page")
+    .querySelectorAll(
+      ".game-page"
+    )
     .forEach(
 
       function (page) {
@@ -625,7 +763,9 @@ function showPage(
 
 
   document
-    .querySelectorAll(".nav-button")
+    .querySelectorAll(
+      ".nav-button"
+    )
     .forEach(
 
       function (nav) {
@@ -647,71 +787,132 @@ function showPage(
 
   }
 
+
+  if (
+    pageName === "wishlist"
+  ) {
+
+    renderWishlistPage();
+
+  }
+
+
+  if (
+    pageName === "collection"
+  ) {
+
+    renderCollection();
+
+  }
+
 }
 
 
 
 /*
-=========================================
-CREATE AVAILABLE ROLL DECK
-=========================================
+==================================================
+ROUND SYSTEM
+==================================================
+
+Round 1:
+6 rolls
+0 claims
+
+Round 5:
++1 claim
+
+Round 10:
++1 claim
+
+Round 15:
++1 claim
+
+etc.
+==================================================
 */
 
-function createAvailableRollDeck() {
+function startNextRound() {
 
   if (!player) {
     return;
   }
 
 
+  player.rounds.current += 1;
+
+
+  /*
+  Every fifth Round awards one claim.
+  */
+
   if (
-    !Array.isArray(
-      rollDatabase
-    )
-    ||
-    rollDatabase.length === 0
+    player.rounds.current % 5 === 0
   ) {
 
-    alert(
-      "The database did not load."
-    );
-
-    return;
+    player.claims.available += 1;
 
   }
 
+
+  generateRoundDeck();
+
+
+  renderDeck();
+
+  updateEverything();
+
+  saveGame();
+
+
+  /*
+  Return the horizontal deck to
+  the first card.
+  */
+
+  const rail =
+    document.getElementById(
+      "rollRail"
+    );
+
+
+  rail.scrollTo({
+
+    left: 0,
+
+    behavior: "smooth"
+
+  });
+
+}
+
+
+
+/*
+==================================================
+GENERATE ONE ROUND
+==================================================
+*/
+
+function generateRoundDeck() {
 
   currentBatch = [];
 
 
-  const rollAmount =
-    Math.floor(
-      player.rolls.available
+  const amount =
+    Math.max(
+
+      1,
+
+      Math.floor(
+        player.rounds.rollsPerRound
+      )
+
     );
 
 
-  /*
-  No rolls.
-  */
-
-  if (
-    rollAmount <= 0
-  ) {
-
-    renderNoRolls();
-
-    return;
-
-  }
-
-
-  /*
-  Generate one result per available roll.
-  */
-
   for (
     let i = 0;
-    i < rollAmount;
+    i < amount;
     i++
   ) {
 
@@ -719,8 +920,21 @@ function createAvailableRollDeck() {
       getRandomEntry();
 
 
+    /*
+    Make a plain copy.
+
+    This means the save file can safely
+    remember the exact result.
+    */
+
+    const savedResult =
+      JSON.parse(
+        JSON.stringify(result)
+      );
+
+
     currentBatch.push(
-      result
+      savedResult
     );
 
 
@@ -737,6 +951,11 @@ function createAvailableRollDeck() {
 
     }
 
+
+    /*
+    Currency rolls pay immediately,
+    ONCE when the Round is created.
+    */
 
     if (
       result.type === "currency"
@@ -755,23 +974,17 @@ function createAvailableRollDeck() {
   }
 
 
-  /*
-  The generated deck used the rolls.
-  */
-
-  player.rolls.available = 0;
-
-
-  renderDeck();
+  player.rounds.currentBatch =
+    currentBatch;
 
 }
 
 
 
 /*
-=========================================
-RANDOM DATABASE ENTRY
-=========================================
+==================================================
+EQUAL RANDOM ENTRY
+==================================================
 */
 
 function getRandomEntry() {
@@ -795,9 +1008,9 @@ function getRandomEntry() {
 
 
 /*
-=========================================
-RENDER DECK
-=========================================
+==================================================
+RENDER ROUND DECK
+==================================================
 */
 
 function renderDeck() {
@@ -809,16 +1022,6 @@ function renderDeck() {
 
 
   rail.innerHTML = "";
-
-
-  document
-    .getElementById("noRollMessage")
-    .classList.add("hidden");
-
-
-  rail.classList.remove(
-    "hidden"
-  );
 
 
   currentBatch.forEach(
@@ -843,6 +1046,7 @@ function renderDeck() {
 
       }
 
+
       else if (
         result.type === "currency"
       ) {
@@ -853,6 +1057,7 @@ function renderDeck() {
           );
 
       }
+
 
       else {
 
@@ -885,70 +1090,9 @@ function renderDeck() {
 
 
 /*
-=========================================
-NO ROLLS
-=========================================
-*/
-
-function renderNoRolls() {
-
-  document
-    .getElementById("rollRail")
-    .classList.add("hidden");
-
-
-  document
-    .getElementById("noRollMessage")
-    .classList.remove("hidden");
-
-
-  setText(
-    "cardPosition",
-    "EMPTY"
-  );
-
-}
-
-
-
-/*
-=========================================
-TEMPORARY REFILL
-=========================================
-
-This stays until we build real regeneration.
-
-It prevents you from getting trapped with
-zero rolls while we're still developing.
-=========================================
-*/
-
-function temporaryRefillRolls() {
-
-  if (!player) {
-    return;
-  }
-
-
-  player.rolls.available =
-    10;
-
-
-  saveGame();
-
-
-  createAvailableRollDeck();
-
-  updateEverything();
-
-}
-
-
-
-/*
-=========================================
+==================================================
 CHARACTER CARD
-=========================================
+==================================================
 */
 
 function buildCharacterCard(
@@ -962,12 +1106,14 @@ function buildCharacterCard(
     );
 
 
-  card.className =
-    "roll-card";
-
-
   const owned =
     player.claimedCharacters.includes(
+      character.id
+    );
+
+
+  const wished =
+    player.wishlist.includes(
       character.id
     );
 
@@ -977,6 +1123,14 @@ function buildCharacterCard(
       character.id
     ]
     ?? 0;
+
+
+  card.className =
+    wished
+    ?
+    "roll-card wished"
+    :
+    "roll-card";
 
 
   card.innerHTML = `
@@ -1078,41 +1232,77 @@ function buildCharacterCard(
       </div>
 
 
-      <button
-        class="claim-button"
 
-        onclick="
-          claimCharacter(
-            '${escapeHtml(character.id)}'
-          )
-        "
+      <div class="card-buttons">
 
-        ${owned ? "disabled" : ""}
-      >
 
-        ${
-          owned
+        <button
+          class="claim-button"
 
-          ?
+          onclick="
+            claimCharacter(
+              '${escapeHtml(character.id)}'
+            )
+          "
 
-          "OWNED"
+          ${owned ? "disabled" : ""}
+        >
 
-          :
-
-          (
-            player.claims.available > 0
+          ${
+            owned
 
             ?
 
-            "CLAIM"
+            "OWNED"
 
             :
 
-            "NO CLAIMS"
-          )
-        }
+            (
+              player.claims.available > 0
 
-      </button>
+              ?
+
+              "CLAIM"
+
+              :
+
+              "NO CLAIMS"
+            )
+          }
+
+        </button>
+
+
+
+        <button
+          class="
+            wish-button
+            ${wished ? "active" : ""}
+          "
+
+          onclick="
+            toggleWishlist(
+              '${escapeHtml(character.id)}'
+            )
+          "
+        >
+
+          ${
+            wished
+
+            ?
+
+            "★ WISHED"
+
+            :
+
+            "☆ WISH"
+          }
+
+        </button>
+
+
+      </div>
 
 
     </div>
@@ -1127,9 +1317,9 @@ function buildCharacterCard(
 
 
 /*
-=========================================
+==================================================
 CURRENCY CARD
-=========================================
+==================================================
 */
 
 function buildCurrencyCard(
@@ -1196,9 +1386,9 @@ function buildCurrencyCard(
 
 
 /*
-=========================================
+==================================================
 EMPTY CARD
-=========================================
+==================================================
 */
 
 function buildEmptyCard() {
@@ -1254,9 +1444,9 @@ function buildEmptyCard() {
 
 
 /*
-=========================================
+==================================================
 CLAIM
-=========================================
+==================================================
 */
 
 function claimCharacter(
@@ -1301,6 +1491,10 @@ function claimCharacter(
 
   renderDeck();
 
+  renderCollection();
+
+  renderWishlistPage();
+
   updateEverything();
 
   saveGame();
@@ -1310,15 +1504,524 @@ function claimCharacter(
 
 
 /*
-=========================================
+==================================================
+WISHLIST
+==================================================
+
+OWNED characters are allowed.
+
+Wishlist capacity comes from:
+
+player.upgrades.wishlistSlots
+
+So later upgrades only need to change that number.
+==================================================
+*/
+
+function toggleWishlist(
+  characterId
+) {
+
+  const index =
+    player.wishlist.indexOf(
+      characterId
+    );
+
+
+  /*
+  Already wished:
+  remove it.
+  */
+
+  if (
+    index !== -1
+  ) {
+
+    player.wishlist.splice(
+      index,
+      1
+    );
+
+  }
+
+
+  /*
+  Not wished:
+  add it if there is room.
+  */
+
+  else {
+
+    const maximum =
+      player.upgrades
+        .wishlistSlots;
+
+
+    if (
+      player.wishlist.length
+      >=
+      maximum
+    ) {
+
+      alert(
+        "Your wishlist is full."
+      );
+
+      return;
+
+    }
+
+
+    player.wishlist.push(
+      characterId
+    );
+
+  }
+
+
+  renderDeck();
+
+  renderWishlistPage();
+
+  renderCollection();
+
+  updateEverything();
+
+  saveGame();
+
+}
+
+
+
+/*
+==================================================
+WISHLIST PAGE
+==================================================
+*/
+
+function renderWishlistPage() {
+
+  if (!player) {
+    return;
+  }
+
+
+  setText(
+
+    "wishlistUsed",
+
+    player.wishlist.length
+
+  );
+
+
+  setText(
+
+    "wishlistMaximum",
+
+    player.upgrades
+      .wishlistSlots
+
+  );
+
+
+  const container =
+    document.getElementById(
+      "wishlistCurrent"
+    );
+
+
+  if (!container) {
+    return;
+  }
+
+
+  container.innerHTML = "";
+
+
+  if (
+    player.wishlist.length === 0
+  ) {
+
+    container.innerHTML = `
+
+      <div class="empty-list">
+        Your wishlist is empty.
+      </div>
+
+    `;
+
+  }
+
+
+  else {
+
+    player.wishlist.forEach(
+
+      function (id) {
+
+        const character =
+          findCharacterById(id);
+
+
+        if (!character) {
+          return;
+        }
+
+
+        container.appendChild(
+
+          buildCharacterListItem(
+            character
+          )
+
+        );
+
+      }
+
+    );
+
+  }
+
+
+  searchWishlistCharacters();
+
+}
+
+
+
+/*
+==================================================
+SEARCH WISHLIST CHARACTERS
+==================================================
+*/
+
+function searchWishlistCharacters() {
+
+  const input =
+    document.getElementById(
+      "wishlistSearch"
+    );
+
+
+  const container =
+    document.getElementById(
+      "wishlistSearchResults"
+    );
+
+
+  if (
+    !input
+    ||
+    !container
+  ) {
+
+    return;
+
+  }
+
+
+  const query =
+    input.value
+      .trim()
+      .toLowerCase();
+
+
+  container.innerHTML =
+    "";
+
+
+  /*
+  Don't dump thousands of characters
+  onto the phone before the user searches.
+  */
+
+  if (
+    query.length < 2
+  ) {
+
+    container.innerHTML = `
+
+      <div class="empty-list">
+        Type at least 2 letters to search.
+      </div>
+
+    `;
+
+
+    return;
+
+  }
+
+
+  const matches =
+    characterDatabase
+      .filter(
+
+        function (character) {
+
+          return (
+
+            character.name
+              .toLowerCase()
+              .includes(query)
+
+            ||
+
+            character.series
+              .toLowerCase()
+              .includes(query)
+
+          );
+
+        }
+
+      )
+      .slice(0, 30);
+
+
+  if (
+    matches.length === 0
+  ) {
+
+    container.innerHTML = `
+
+      <div class="empty-list">
+        No characters found.
+      </div>
+
+    `;
+
+
+    return;
+
+  }
+
+
+  matches.forEach(
+
+    function (character) {
+
+      container.appendChild(
+
+        buildCharacterListItem(
+          character
+        )
+
+      );
+
+    }
+
+  );
+
+}
+
+
+
+/*
+==================================================
+CHARACTER LIST ITEM
+==================================================
+*/
+
+function buildCharacterListItem(
+  character
+) {
+
+  const item =
+    document.createElement(
+      "article"
+    );
+
+
+  item.className =
+    "character-list-item";
+
+
+  const wished =
+    player.wishlist.includes(
+      character.id
+    );
+
+
+  const owned =
+    player.claimedCharacters.includes(
+      character.id
+    );
+
+
+  item.innerHTML = `
+
+    <div class="character-list-info">
+
+      <h3>
+        ${escapeHtml(character.name)}
+      </h3>
+
+
+      <p>
+        ${escapeHtml(character.series)}
+      </p>
+
+
+      <small>
+
+        #${formatNumber(character.rank)}
+
+        ·
+
+        ◈ ${formatNumber(character.value)}
+
+        ${owned ? " · OWNED" : ""}
+
+      </small>
+
+    </div>
+
+
+    <button
+      class="
+        list-wish-button
+        ${wished ? "active" : ""}
+      "
+
+      onclick="
+        toggleWishlist(
+          '${escapeHtml(character.id)}'
+        )
+      "
+    >
+
+      ${
+        wished
+        ?
+        "★ WISHED"
+        :
+        "☆ WISH"
+      }
+
+    </button>
+
+  `;
+
+
+  return item;
+
+}
+
+
+
+/*
+==================================================
+COLLECTION PAGE
+==================================================
+*/
+
+function renderCollection() {
+
+  const container =
+    document.getElementById(
+      "collectionList"
+    );
+
+
+  if (
+    !container
+    ||
+    !player
+  ) {
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    "";
+
+
+  if (
+    player.claimedCharacters.length
+    === 0
+  ) {
+
+    container.innerHTML = `
+
+      <div class="empty-list">
+        No claimed characters yet.
+      </div>
+
+    `;
+
+
+    return;
+
+  }
+
+
+  player.claimedCharacters.forEach(
+
+    function (id) {
+
+      const character =
+        findCharacterById(id);
+
+
+      if (!character) {
+        return;
+      }
+
+
+      container.appendChild(
+
+        buildCharacterListItem(
+          character
+        )
+
+      );
+
+    }
+
+  );
+
+}
+
+
+
+/*
+==================================================
+FIND CHARACTER
+==================================================
+*/
+
+function findCharacterById(id) {
+
+  return characterDatabase.find(
+
+    function (character) {
+
+      return character.id === id;
+
+    }
+
+  );
+
+}
+
+
+
+/*
+==================================================
 PROBABILITIES
-=========================================
+==================================================
 */
 
 function getCharacterProbability() {
 
-  return percent(
+  return formatPercent(
+
     1 / rollDatabase.length
+
   );
 
 }
@@ -1326,8 +2029,10 @@ function getCharacterProbability() {
 
 function getCurrencyProbability() {
 
-  return percent(
+  return formatPercent(
+
     2 / rollDatabase.length
+
   );
 
 }
@@ -1335,14 +2040,18 @@ function getCurrencyProbability() {
 
 function getEmptyProbability() {
 
-  return percent(
+  return formatPercent(
+
     1000 / rollDatabase.length
+
   );
 
 }
 
 
-function percent(decimal) {
+function formatPercent(
+  decimal
+) {
 
   const value =
     decimal * 100;
@@ -1364,9 +2073,9 @@ function percent(decimal) {
 
 
 /*
-=========================================
+==================================================
 CARD POSITION
-=========================================
+==================================================
 */
 
 function updateCardPosition() {
@@ -1466,9 +2175,63 @@ function updateCardPosition() {
 
 
 /*
-=========================================
+==================================================
+NEXT CLAIM DISPLAY
+==================================================
+*/
+
+function updateNextClaimNotice() {
+
+  const round =
+    player.rounds.current;
+
+
+  const remainder =
+    round % 5;
+
+
+  let nextClaimRound;
+
+
+  if (
+    remainder === 0
+  ) {
+
+    nextClaimRound =
+      round + 5;
+
+  }
+
+  else {
+
+    nextClaimRound =
+      round
+      +
+      (5 - remainder);
+
+  }
+
+
+  setText(
+
+    "nextClaimNotice",
+
+    "Next claim on Round "
+
+    +
+
+    nextClaimRound
+
+  );
+
+}
+
+
+
+/*
+==================================================
 PROFILE
-=========================================
+==================================================
 */
 
 function updateProfile() {
@@ -1481,17 +2244,18 @@ function updateProfile() {
   const totalKeys =
     Object.values(
       player.keys
-    ).reduce(
+    )
+    .reduce(
 
       function (
         total,
-        value
+        amount
       ) {
 
         return (
           total
           +
-          Number(value || 0)
+          Number(amount || 0)
         );
 
       },
@@ -1502,14 +2266,30 @@ function updateProfile() {
 
 
   setText(
-    "profileRolls",
-    player.rolls.available
+
+    "profileRound",
+
+    player.rounds.current
+
   );
 
 
   setText(
+
+    "profileRolls",
+
+    player.rounds
+      .rollsPerRound
+
+  );
+
+
+  setText(
+
     "profileClaims",
+
     player.claims.available
+
   );
 
 
@@ -1534,7 +2314,8 @@ function updateProfile() {
 
     "profileWishlistSlots",
 
-    player.upgrades.wishlistSlots
+    player.upgrades
+      .wishlistSlots
 
   );
 
@@ -1555,7 +2336,8 @@ function updateProfile() {
 
     "profileStarwishSlots",
 
-    player.upgrades.starwishSlots
+    player.upgrades
+      .starwishSlots
 
   );
 
@@ -1587,16 +2369,6 @@ function updateProfile() {
 
   );
 
-
-  /*
-  Roll pool size.
-
-  This includes:
-
-  characters
-  currency entries
-  :( entries
-  */
 
   setText(
 
@@ -1682,12 +2454,6 @@ function updateProfile() {
 
 
   setText(
-    "profileWhiteAmount",
-    "3–4"
-  );
-
-
-  setText(
 
     "profileTotalKeys",
 
@@ -1716,9 +2482,9 @@ function updateProfile() {
 
 
 /*
-=========================================
-MAIN UI UPDATE
-=========================================
+==================================================
+UPDATE APP
+==================================================
 */
 
 function updateEverything() {
@@ -1742,11 +2508,19 @@ function updateEverything() {
 
   setText(
 
-    "rollsAvailableDisplay",
+    "roundDisplay",
 
-    formatNumber(
-      player.rolls.available
-    )
+    player.rounds.current
+
+  );
+
+
+  setText(
+
+    "rollsDisplay",
+
+    player.rounds
+      .rollsPerRound
 
   );
 
@@ -1755,9 +2529,7 @@ function updateEverything() {
 
     "claimsDisplay",
 
-    formatNumber(
-      player.claims.available
-    )
+    player.claims.available
 
   );
 
@@ -1775,14 +2547,24 @@ function updateEverything() {
 
   setText(
 
-    "towerDisplay",
+    "wishlistUsed",
 
-    player.tower
-      ?.currentFloor
-    ?? 1
+    player.wishlist.length
 
   );
 
+
+  setText(
+
+    "wishlistMaximum",
+
+    player.upgrades
+      .wishlistSlots
+
+  );
+
+
+  updateNextClaimNotice();
 
   updateProfile();
 
@@ -1791,14 +2573,14 @@ function updateEverything() {
 
 
 /*
-=========================================
+==================================================
 HELPERS
-=========================================
+==================================================
 */
 
 function setText(
   id,
-  text
+  value
 ) {
 
   const element =
@@ -1808,14 +2590,16 @@ function setText(
   if (element) {
 
     element.textContent =
-      text;
+      value;
 
   }
 
 }
 
 
-function formatNumber(number) {
+function formatNumber(
+  number
+) {
 
   return Number(
     number ?? 0
@@ -1824,28 +2608,45 @@ function formatNumber(number) {
 }
 
 
-function escapeHtml(text) {
+function escapeHtml(
+  text
+) {
 
   return String(text)
 
-    .replaceAll("&", "&amp;")
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
 
-    .replaceAll("<", "&lt;")
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
 
-    .replaceAll(">", "&gt;")
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
 
-    .replaceAll('"', "&quot;")
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
 
-    .replaceAll("'", "&#039;");
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
 
 }
 
 
 
 /*
-=========================================
+==================================================
 AUTOSAVE
-=========================================
+==================================================
 */
 
 setInterval(
@@ -1865,6 +2666,7 @@ setInterval(
 );
 
 
+
 window.addEventListener(
 
   "beforeunload",
@@ -1880,9 +2682,9 @@ window.addEventListener(
 
 
 /*
-=========================================
+==================================================
 START
-=========================================
+==================================================
 */
 
 window.addEventListener(
